@@ -1,0 +1,64 @@
+/* Input / scan screen. Ported from the approved prototype. */
+
+.main { flex: 1; padding: 8px 16px 40px; }
+.q { font-family: var(--display); font-weight: 600; font-size: 30px; line-height: 1.08; letter-spacing: -.022em; margin: 22px 0 6px; }
+.qSub { font-size: 15px; color: var(--muted); margin-bottom: 20px; }
+.step { font-size: 11.5px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; color: var(--muted); margin: 30px 0 12px; }
+.optional { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+.scan {
+  display: flex; align-items: center; justify-content: center; gap: 11px; width: 100%; min-height: 120px;
+  background: var(--surface); border: 1.5px dashed var(--hair); border-radius: var(--r-lg);
+  font-family: var(--body); font-weight: 600; font-size: 17px; color: var(--ink); cursor: pointer;
+  transition: border-color .15s ease, background .15s ease; text-align: left;
+}
+.scan:hover { border-color: var(--green); background: var(--green-soft); }
+.scan:disabled { cursor: default; opacity: .85; }
+.cam { width: 46px; height: 46px; border-radius: var(--r-full); background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.cap small { display: block; font-weight: 500; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.spinner { width: 22px; height: 22px; border: 2.5px solid color-mix(in srgb, #fff 45%, transparent); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.or { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; margin: 14px 0; }
+.or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+
+.textarea {
+  width: 100%; min-height: 96px; resize: vertical; font-family: var(--body); font-size: 15px; line-height: 1.5;
+  color: var(--ink); background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-md);
+  padding: 14px 15px; outline: none;
+}
+.textarea::placeholder { color: var(--muted); }
+.textarea:focus { border-color: var(--green); }
+
+.goals { display: flex; flex-wrap: wrap; gap: 9px; }
+.goal {
+  font-family: var(--body); font-size: 14.5px; font-weight: 600; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--hair); padding: 11px 16px; border-radius: var(--r-full); cursor: pointer;
+  min-height: 44px; transition: all .15s ease;
+}
+.goal:hover { border-color: var(--green); }
+.goalActive { background: var(--green); color: #fff; border-color: var(--green); }
+.goalActive:hover { border-color: var(--green); }
+
+.field {
+  display: flex; align-items: center; gap: 11px; background: var(--surface); border: 1px solid var(--hair);
+  border-radius: var(--r-full); padding: 8px 9px 8px 16px;
+}
+.field:focus-within { border-color: var(--green); }
+.field input { flex: 1; border: none; background: transparent; font-family: var(--body); font-size: 15px; color: var(--ink); outline: none; min-width: 0; }
+.field input::placeholder { color: var(--muted); }
+.hint { font-size: 13px; color: var(--muted); margin-top: 9px; }
+.errnote { font-size: 13px; color: var(--terra); margin-top: 10px; }
+
+.dock {
+  position: sticky; bottom: 0; background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: saturate(140%) blur(10px); border-top: 1px solid var(--hair);
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+}
+.cta {
+  display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; min-height: 52px;
+  background: var(--green); color: #fff; border: none; border-radius: var(--r-full);
+  font-family: var(--body); font-weight: 600; font-size: 17px; cursor: pointer; transition: filter .15s ease;
+}
+.cta:hover { filter: brightness(1.07); }
+.cta:disabled { opacity: .5; cursor: default; }
