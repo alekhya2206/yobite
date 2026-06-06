@@ -5,6 +5,13 @@
 .brand { font-family: var(--display); font-weight: 800; color: var(--coral); }
 .barSpacer { flex: 1; }
 
+/* Video/Photo segmented toggle. Photo is active; Video is a deferred-feature
+   placeholder ("soon") so the screen matches the mockup. */
+.modeToggle { display: inline-flex; background: rgba(255,255,255,0.08); border-radius: var(--r-full); padding: 3px; }
+.modeOpt { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: var(--r-full); font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.55); }
+.modeActive { background: var(--coral); color: #fff; }
+.modeOpt small { font-size: 0.58rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.04em; }
+
 .placeRow { padding: 0 var(--s-md) var(--s-sm); }
 .placeInput {
   width: 100%; padding: var(--s-sm) var(--s-md); border-radius: var(--r-full);

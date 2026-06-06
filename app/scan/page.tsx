@@ -147,6 +147,12 @@ export default function ScanPage() {
         </Link>
         <span className={s.brand}>YoBite</span>
         <span className={s.barSpacer} />
+        <div className={s.modeToggle} role="group" aria-label="Capture mode">
+          <span className={`${s.modeOpt} ${s.modeActive}`}>Photo</span>
+          <span className={s.modeOpt} aria-disabled="true">
+            Video <small>soon</small>
+          </span>
+        </div>
       </header>
 
       <div className={s.placeRow}>
