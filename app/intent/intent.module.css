@@ -44,7 +44,7 @@
   align-items: center;
 }
 .input {
-  flex: 1;
+  width: 100%;
   padding: var(--s-md);
   border-radius: var(--r-md);
   border: 1px solid var(--hair);
@@ -52,6 +52,10 @@
   color: var(--ink);
   font-size: 1rem;
 }
+/* Only the mood input (inside the flex row) grows horizontally. As a direct
+   child of the vertical column, a bare `flex: 1` would stretch the "ate" input
+   to fill the page — scope it to the row. */
+.field .input { flex: 1; width: auto; }
 .mic {
   width: 48px;
   height: 48px;
