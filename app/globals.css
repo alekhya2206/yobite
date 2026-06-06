@@ -23,16 +23,11 @@
   /* Spacing (8px base, 4px substeps) */
   --s-2xs: 2px; --s-xs: 4px; --s-sm: 8px; --s-md: 16px; --s-lg: 24px;
   --s-xl: 32px; --s-2xl: 48px; --s-3xl: 64px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #1A130C; --surface: #241A11; --surface-tint: #241A11;
-    --ink: #FBEFE2; --muted: #C4A98C; --muted-soft: #C4A98C; --hair: #352819;
-    --coral: #FF7A55; --gold: #FFC04D; --gold-ink: #2A1A00;
-    --green: #5FB587; --terra: #D8825F;
-    --coral-soft: #3A2117; --gold-soft: #33280F; --green-soft: #1E2C24; --terra-soft: #2E2019;
-  }
+  /* Ship LIGHT to match the approved mockups (docs/design/*). The warm-dark
+     palette is documented in DESIGN.md but is NOT auto-applied via the OS
+     preference — there is no approved dark mockup. (The Scan screen is
+     intentionally dark on its own; see scan.module.css.) */
+  color-scheme: light;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }

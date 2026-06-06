@@ -34,10 +34,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFF1E6" },
-    { media: "(prefers-color-scheme: dark)", color: "#1A130C" },
-  ],
+  // Light-only to match the approved mockups (no dark variant ships in v1).
+  themeColor: "#FFF1E6",
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
