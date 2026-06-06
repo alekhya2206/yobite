@@ -100,8 +100,8 @@ export default function ScanPage() {
       const base64 = canvas.toDataURL("image/jpeg", 0.85).split(",")[1];
       const dishes = await postScan(base64, "image/jpeg");
       // OV-1: merge + dedupe and stay on screen for the next page.
-      const merged = normalizeDishes([...captured, ...dishes]);
-      setCaptured(merged);
+      // Functional updater avoids a stale-closure read of `captured` on rapid captures.
+      setCaptured((prev) => normalizeDishes([...prev, ...dishes]));
       setPageCount((n) => n + 1);
       setStatus("ready");
     } catch (err) {
