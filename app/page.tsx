@@ -5,24 +5,37 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Deck } from "@/components/Deck";
-import { CloseIcon } from "@/components/icons";
+import { CheckIcon, CloseIcon, UserIcon } from "@/components/icons";
 import {
   clearSession, getGoal, getSession, listPlaces, newSession, saveSession,
 } from "@/lib/storage";
 import { goalLabel } from "@/lib/ranker";
+import type { Goal } from "@/lib/ranker/types";
 import type { ActiveSession, Place } from "@/lib/storage/types";
 import s from "./page.module.css";
+
+// Short descriptors under the goal name on the goal card (matches the mockup).
+const GOAL_CHIPS: Record<string, string[]> = {
+  "high-protein": ["lean", "grilled", "110g target"],
+  "fat-loss": ["lighter", "lower-cal", "veg-forward"],
+  balanced: ["a bit of everything", "in moderation"],
+};
+
+function goalChips(goal: Goal | null): string[] {
+  if (!goal) return [];
+  return GOAL_CHIPS[goal.id] ?? (goal.custom ? [goal.custom] : []);
+}
 
 export default function Home() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [goalText, setGoalText] = useState("");
+  const [goal, setGoalState] = useState<Goal | null>(null);
   const [session, setSession] = useState<ActiveSession | null>(null);
   const [lastPlace, setLastPlace] = useState<Place | null>(null);
 
   // Client-only: read persisted state after mount (avoids SSR/storage mismatch).
   useEffect(() => {
-    setGoalText(goalLabel(getGoal()));
+    setGoalState(getGoal());
     setSession(getSession());
     setLastPlace(listPlaces()[0] ?? null);
     setMounted(true);
@@ -52,11 +65,21 @@ export default function Home() {
             <h1 className={s.greet}>Hungry?</h1>
             <p className={s.sub}>Point me at the menu — I&rsquo;ll pick.</p>
           </div>
+          <Link href="/profile" className={s.avatar} aria-label="Profile">
+            <UserIcon size={20} />
+          </Link>
         </header>
 
         <Link href="/scan" className={s.goalCard}>
           <span className={s.goalEyebrow}>Your goal</span>
-          <span className={s.goalName}>{goalText || "Balanced"}</span>
+          <span className={s.goalName}>{goal ? goalLabel(goal) : "Balanced"}</span>
+          {goalChips(goal).length > 0 && (
+            <div className={s.goalChips}>
+              {goalChips(goal).map((c) => (
+                <span key={c} className={s.goalChip}>{c}</span>
+              ))}
+            </div>
+          )}
         </Link>
 
         {/* DR-3: warm first-run hint for empty state */}
@@ -91,6 +114,14 @@ export default function Home() {
             <span className={s.lastName}>{lastPlace.name}</span>
             <span className={`${s.lastMeta} tnum`}>{lastPlace.dishes.length} dishes saved · tap to re-pick</span>
           </button>
+        )}
+
+        {/* "Restaurants near you" teaser — Browse library lands in a later plan. */}
+        {!session && (
+          <Link href="/browse" className={s.nearYou}>
+            <CheckIcon size={16} />
+            Restaurants near you — coming soon
+          </Link>
         )}
       </main>
 

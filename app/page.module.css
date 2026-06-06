@@ -2,10 +2,15 @@
 /* Task 8b: minimal stub — .main, .greet, .sub provided for deck placeholder pages.
    Task 9 completes this file with all Home screen styles. */
 .main { flex: 1; padding: var(--s-xl) var(--s-md) var(--s-lg); display: flex; flex-direction: column; gap: var(--s-md); }
-.head { margin-bottom: var(--s-xs); }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-md); margin-bottom: var(--s-xs); }
 .brand { font-family: var(--display); font-weight: 800; font-size: 1.1rem; color: var(--coral); letter-spacing: -0.01em; }
 .greet { font-family: var(--display); font-weight: 800; font-size: 2.4rem; letter-spacing: -0.02em; line-height: 1.05; margin-top: var(--s-sm); }
 .sub { color: var(--muted); margin-top: var(--s-2xs); }
+.avatar {
+  flex-shrink: 0; width: 40px; height: 40px; border-radius: var(--r-full);
+  background: var(--coral); color: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 16px -8px rgba(224, 73, 47, 0.7);
+}
 
 .goalCard {
   display: flex; flex-direction: column; gap: var(--s-xs);
@@ -15,6 +20,14 @@
 }
 .goalEyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; opacity: 0.85; }
 .goalName { font-family: var(--display); font-weight: 800; font-size: 1.7rem; letter-spacing: -0.01em; }
+.goalChips { display: flex; flex-wrap: wrap; gap: var(--s-xs); margin-top: var(--s-2xs); }
+.goalChip { background: rgba(255, 255, 255, 0.18); color: #fff; border-radius: var(--r-full); padding: 3px var(--s-sm); font-size: 0.72rem; font-weight: 600; }
+
+.nearYou {
+  display: inline-flex; align-items: center; gap: var(--s-xs); align-self: flex-start;
+  background: var(--green-soft); color: var(--green); border-radius: var(--r-full);
+  padding: var(--s-sm) var(--s-md); font-size: 0.85rem; font-weight: 600;
+}
 
 .sessionCard {
   background: var(--surface); border: 1px solid var(--hair);
