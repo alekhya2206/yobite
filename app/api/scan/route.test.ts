@@ -1,5 +1,5 @@
 // app/api/scan/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 // Mock the AI layer so the route test never hits the network.
 vi.mock("@/lib/ai/readMenu", () => ({
