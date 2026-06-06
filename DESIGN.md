@@ -135,3 +135,4 @@
 | 2026-06-06 | Scan icon = scan reticle (not camera); deck = line icons, center Scan FAB | Camera glyph read as dull; reticle echoes the camera-template brackets and reads as "smart scan." |
 | 2026-06-06 | Muted text `#7A5230` on peach `#FFF1E6` | WCAG AA (~4.6:1) for body-size secondary text; lighter `#9A7B63` reserved for large/decorative. |
 | 2026-06-06 | Green demoted from brand to "positive signal"; coral = brand + best pick | Vivid direction makes coral the identity; green now marks healthy/also-good, terracotta marks heavier. |
+| 2026-06-06 | Plan 2 shipped: v2 UI (Home/Scan/Intent/Verdict/Plan-a-meal), local-first (localStorage), in-app camera → /api/scan, tesseract deleted | Builds the verdict loop on the merged AI pipeline; My Places/Browse/Profile screens are Plan 2B; auth/DB Plan 3. |
