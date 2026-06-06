@@ -45,4 +45,11 @@ describe("postScan", () => {
     await expect(postScan("X", "image/jpeg", fetchFn)).rejects.toThrow(/menu/i);
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
+
+  // Review fix: permanent 4xx errors fail fast (no retry), with consistent copy.
+  it("does NOT retry a permanent 4xx and shows the user-facing message", async () => {
+    const fetchFn = vi.fn(async () => ({ ok: false, status: 400, json: async () => ({}) }) as unknown as Response);
+    await expect(postScan("X", "image/jpeg", fetchFn)).rejects.toThrow(/menu/i);
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
 });

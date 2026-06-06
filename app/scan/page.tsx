@@ -113,6 +113,10 @@ export default function ScanPage() {
 
   // Finish from everything captured so far (OV-1).
   function done() {
+    if (!place.trim()) {
+      setError("Tell me where you are first.");
+      return;
+    }
     if (captured.length === 0) {
       setError("Capture a page or type the menu first.");
       return;
@@ -178,7 +182,7 @@ export default function ScanPage() {
           <span className={s.pageBadge}>
             {captured.length} dishes · {pageCount} {pageCount === 1 ? "page" : "pages"}
           </span>
-          <button className={s.doneBtn} onClick={done}>Done →</button>
+          <button className={s.doneBtn} onClick={done} disabled={status === "reading"}>Done →</button>
         </div>
       )}
 
