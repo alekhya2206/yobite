@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckIcon, CloseIcon } from "@/components/icons";
+import { BackIcon, CheckIcon, CloseIcon } from "@/components/icons";
 import { clearSession, getSession, saveSession } from "@/lib/storage";
 import { planFullMeal, type FullMeal } from "@/lib/meal/planFullMeal";
 import type { RankResult, RankedDish } from "@/lib/ranker/types";
@@ -120,7 +120,12 @@ export default function OrderPage() {
   return (
     <div className="app">
       <header className={s.bar}>
+        <button className={s.back} onClick={() => router.back()} aria-label="Back">
+          <BackIcon size={20} />
+        </button>
         <span className={s.place}>{place}</span>
+        <span className={s.goalPill}>{result.goalLabel}</span>
+        <span className={s.barSpacer} />
         <button className={s.end} onClick={end} aria-label="End session">
           End <CloseIcon size={14} />
         </button>
@@ -162,9 +167,11 @@ export default function OrderPage() {
         )}
       </main>
 
-      <button className={s.planFab} onClick={() => setMeal(planFullMeal(result))}>
-        Plan a full meal
-      </button>
+      <div className={s.planBarWrap}>
+        <button className={s.planBar} onClick={() => setMeal(planFullMeal(result))}>
+          Plan a full meal
+        </button>
+      </div>
 
       {meal && (
         <div className={s.sheetWrap} role="dialog" aria-label="Plan a full meal" aria-modal="true">

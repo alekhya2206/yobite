@@ -5,8 +5,17 @@
 .bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--s-sm);
   padding: var(--s-md);
+}
+.back {
+  display: flex; flex-shrink: 0;
+  width: 40px; height: 40px;
+  align-items: center; justify-content: center;
+  border-radius: var(--r-full);
+  border: 1px solid var(--hair);
+  background: var(--surface);
+  color: var(--ink);
 }
 .place {
   font-family: var(--display);
@@ -14,6 +23,15 @@
   font-size: 1.05rem;
   color: var(--ink);
 }
+.goalPill {
+  background: var(--coral-soft);
+  color: var(--coral);
+  border-radius: var(--r-full);
+  padding: 3px var(--s-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.barSpacer { flex: 1; }
 .end {
   display: inline-flex;
   align-items: center;
@@ -128,14 +146,11 @@
   color: var(--muted);
 }
 
-/* DR-1: terracotta is a non-text accent (left border + soft fill); text stays AA-safe. */
-.heavyBlock {
-  background: var(--terra-soft);
-  border-color: transparent;
-  border-left: 4px solid var(--terra);
-}
+/* Matches the mockup: a clean white card with a terracotta tier heading and
+   readable (ink) dish names. The terracotta "Heavier — go easy" heading carries
+   the tier signal; dish names stay AA-safe ink on white (DR-1 intent preserved). */
 .heavyBlock .blockTitle {
-  color: var(--ink);
+  color: var(--terra);
 }
 .heavyRow {
   display: flex;
@@ -150,17 +165,29 @@
   color: var(--muted);
 }
 
-/* ---- plan-a-full-meal corner action (NOT a bottom CTA bar) ---- */
-.planFab {
+/* ---- plan-a-full-meal: full-width bottom bar (matches the mockup's bottom CTA
+   slot). Fixed, full app-width, sits above the safe area; the poster's bottom
+   padding clears it so nothing is obscured. ---- */
+.planBarWrap {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(var(--s-lg) + env(safe-area-inset-bottom, 0px));
+  bottom: 0;
   z-index: 25;
+  width: 100%;
+  max-width: var(--app-w);
+  padding: var(--s-sm) var(--s-md) calc(var(--s-md) + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--paper) 70%, transparent);
+  pointer-events: none;
+}
+.planBar {
+  pointer-events: auto;
+  width: 100%;
   background: var(--gold);
   color: var(--gold-ink);
   font-weight: 800;
-  padding: var(--s-md) var(--s-xl);
+  font-size: 1.05rem;
+  padding: var(--s-md);
   border: none;
   border-radius: var(--r-full);
   box-shadow: 0 10px 24px -10px rgba(245, 166, 35, 0.7);
