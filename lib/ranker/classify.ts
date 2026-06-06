@@ -84,14 +84,15 @@ export function classifyDish(name: string): Dish {
   let friedHits = countMatches(padded, FRIED_METHODS, signals);
   // "Stir fried" trips the bare "fried" token but is a lean, low-oil method —
   // undo that false positive and credit it as lean instead.
-  if (has(padded, "stir fried") || has(padded, "stir fry")) {
+  const stirPhrase = has(padded, "stir fried") ? "stir fried" : has(padded, "stir fry") ? "stir fry" : null;
+  if (stirPhrase) {
     if (friedHits > 0) {
       friedHits -= 1;
       const i = signals.indexOf("fried");
       if (i !== -1) signals.splice(i, 1);
     }
     leanHits += 1;
-    signals.push("stir fried");
+    signals.push(stirPhrase);
   }
   const richHeavyHits = countMatches(padded, RICH_HEAVY, signals);
   const richMildHits = countMatches(padded, RICH_MILD, signals);

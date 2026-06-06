@@ -10,8 +10,9 @@
 //   MENU_IMAGE=./menu.jpg MENU_GOAL="high protein, ate rice at lunch" \
 //     npx vitest run lib/ai/live-scan.test.ts
 //
-// It self-skips (green, no failure) unless BOTH GEMINI_API_KEY (loaded from
-// .env.local) and MENU_IMAGE are present — so it never breaks `npm test`.
+// It self-skips (green, no failure) unless MENU_IMAGE and an AI key
+// (GEMINI_API_KEY or OPENROUTER_API_KEY, loaded from .env.local) are both
+// present — so it never breaks `npm test`.
 import { readFileSync, existsSync } from "node:fs";
 import { extname, resolve } from "node:path";
 import { describe, it, expect } from "vitest";
