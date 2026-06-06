@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     include: ["lib/**/*.test.ts", "app/**/*.test.ts", "app/**/*.test.tsx", "components/**/*.test.tsx"],
     environment: "node", // per-file override via `// @vitest-environment jsdom`
+    pool: "vmForks",     // Node 26 has an experimental localStorage that bleeds into forks/threads
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
   },
