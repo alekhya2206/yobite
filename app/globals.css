@@ -1,23 +1,37 @@
-/* YoBite — global styles & design tokens.
-   Ported from the approved prototypes; values trace to DESIGN.md. Do not deviate
-   from these tokens without updating DESIGN.md. */
+/* YoBite — global styles & design tokens (v2: Vivid / Sunset Coral / Bricolage).
+   Values trace to DESIGN.md. Do NOT deviate without updating DESIGN.md.
+   Guarded by app/design-tokens.test.ts. */
 
 :root {
-  --paper: #FAF6EF; --surface: #FFFDF9; --ink: #211C16; --muted: #756B61;
-  --green: #2F7A57; --amber: #D98E3D; --terra: #BE5E3D; --hair: #EAE3D8;
-  --green-soft: #E7F0EA; --amber-soft: #F7ECDC; --terra-soft: #F3E2DA;
-  --display: var(--font-display), 'Fraunces', Georgia, serif;
+  /* Canvas / surface / ink */
+  --paper: #FFF1E6; --surface: #FFFFFF; --surface-tint: #FFF6EC;
+  --ink: #2A1207; --muted: #7A5230; --muted-soft: #9A7B63;
+  /* Identity + action */
+  --coral: #E0492F; --gold: #F5A623; --gold-ink: #3A2400;
+  /* Signals / tiers */
+  --green: #2F7A57; --terra: #BE5E3D;
+  /* Lines + soft fills */
+  --hair: #F0E2D2;
+  --coral-soft: #FAD8C2; --gold-soft: #FFD98A; --green-soft: #E7F0EA; --terra-soft: #F3E2DA;
+  /* Type */
+  --display: var(--font-display), 'Bricolage Grotesque', system-ui, sans-serif;
   --body: var(--font-body), 'DM Sans', system-ui, -apple-system, sans-serif;
-  --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-full: 999px;
-  --maxw: 1120px; --app-w: 460px;
-  --s-sm: 8px; --s-md: 16px; --s-lg: 24px; --s-xl: 32px;
-  --s-2xl: 48px; --s-3xl: 64px; --s-4xl: 96px;
+  /* Radii */
+  --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 22px; --r-full: 999px;
+  /* Layout */
+  --app-w: 460px; --maxw: 1080px; --deck-h: 72px;
+  /* Spacing (8px base, 4px substeps) */
+  --s-2xs: 2px; --s-xs: 4px; --s-sm: 8px; --s-md: 16px; --s-lg: 24px;
+  --s-xl: 32px; --s-2xl: 48px; --s-3xl: 64px;
 }
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #181410; --surface: #221C16; --ink: #F3ECE0; --muted: #A89E90; --hair: #332B22;
-    --green: #5FB587; --amber: #E9A95E; --terra: #D8825F;
-    --green-soft: #1E2C24; --amber-soft: #2E2618; --terra-soft: #2E2019;
+    --paper: #1A130C; --surface: #241A11; --surface-tint: #241A11;
+    --ink: #FBEFE2; --muted: #C4A98C; --muted-soft: #C4A98C; --hair: #352819;
+    --coral: #FF7A55; --gold: #FFC04D; --gold-ink: #2A1A00;
+    --green: #5FB587; --terra: #D8825F;
+    --coral-soft: #3A2117; --gold-soft: #33280F; --green-soft: #1E2C24; --terra-soft: #2E2019;
   }
 }
 
@@ -29,44 +43,31 @@ html { scroll-behavior: smooth; }
 }
 body {
   font-family: var(--body); background: var(--paper); color: var(--ink);
-  line-height: 1.55; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  line-height: 1.5; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
 a { color: inherit; text-decoration: none; }
-:focus-visible { outline: 2.5px solid var(--green); outline-offset: 2px; border-radius: 6px; }
-button { font-family: var(--body); }
+button { font-family: var(--body); cursor: pointer; }
+:focus-visible { outline: 2.5px solid var(--coral); outline-offset: 2px; border-radius: 6px; }
+input, textarea { font-family: var(--body); }
 
-/* ---- shared logo + app shell ---- */
-.logo-mark { display: block; flex-shrink: 0; }
-
+/* ---- app shell ---- */
 .app {
   max-width: var(--app-w); margin: 0 auto; min-height: 100dvh; background: var(--paper);
-  display: flex; flex-direction: column; box-shadow: 0 0 0 1px var(--hair);
+  display: flex; flex-direction: column; position: relative;
+  padding-bottom: calc(var(--deck-h) + env(safe-area-inset-bottom, 0px) + var(--s-md));
 }
-@media (max-width: 480px) { .app { box-shadow: none; } }
+@media (min-width: 481px) { .app { box-shadow: 0 0 0 1px var(--hair); } }
 
-.topbar {
-  position: sticky; top: 0; z-index: 20;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
-  backdrop-filter: saturate(140%) blur(8px); border-bottom: 1px solid var(--hair);
-}
-.topbar-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
-.icon-btn {
-  width: 44px; height: 44px; border-radius: var(--r-full); border: 1px solid var(--hair);
-  background: var(--surface); display: flex; align-items: center; justify-content: center;
-  color: var(--ink); font-size: 19px; cursor: pointer; flex-shrink: 0; line-height: 1;
-}
-.icon-btn:hover { border-color: var(--green); }
-.tb-title { flex: 1; font-size: 14px; font-weight: 600; color: var(--muted); }
+/* numeric chips stay aligned + calm */
+.tnum { font-variant-numeric: tabular-nums; }
 
-/* ---- shared mic ---- */
-.mic {
-  width: 44px; height: 44px; border-radius: var(--r-full); background: var(--green); color: #fff;
-  border: none; display: flex; align-items: center; justify-content: center; font-size: 17px;
-  cursor: pointer; flex-shrink: 0; transition: filter .15s ease;
+/* visually-hidden but screen-reader available */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
-.mic:hover { filter: brightness(1.07); }
-.mic.listening { animation: pulse 1.1s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 50%, transparent); } 50% { box-shadow: 0 0 0 8px transparent; } }
 
-.eyebrow { font-size: 11.5px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; color: var(--muted); }
-.sr-only { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.eyebrow {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.10em;
+  text-transform: uppercase; color: var(--muted);
+}
