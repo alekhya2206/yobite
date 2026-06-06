@@ -97,6 +97,23 @@ describe("classifyDish", () => {
     expect(d.kind).toBe("starter");
   });
 
+  it("reads stir-fried as a lean method, not deep-fried", () => {
+    // "Stir Fried" contains the token "fried" but stir-frying is a lean,
+    // light method — it must not be penalized like deep-frying.
+    const d = classifyDish("Stir Fried Chicken with Basil");
+    expect(d.profile.fried).toBeLessThan(0.2);
+    expect(d.profile.lean).toBeGreaterThan(0.3);
+    expect(d.signals).toContain("stir fried");
+    expect(d.signals).not.toContain("fried");
+  });
+
+  it("records the actual matched stir-fry phrase in signals", () => {
+    // "stir fry" (no -ied) should surface as "stir fry", not "stir fried".
+    const d = classifyDish("Chicken Stir Fry");
+    expect(d.signals).toContain("stir fry");
+    expect(d.signals).not.toContain("stir fried");
+  });
+
   it("reads paneer as vegetarian protein", () => {
     const d = classifyDish("Palak Paneer");
     expect(d.profile.vegetarian).toBe(true);

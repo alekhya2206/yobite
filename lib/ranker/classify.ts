@@ -80,8 +80,20 @@ export function classifyDish(name: string): Dish {
   const padded = ` ${name.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim()} `;
   const signals: string[] = [];
 
-  const leanHits = countMatches(padded, LEAN_METHODS, signals);
-  const friedHits = countMatches(padded, FRIED_METHODS, signals);
+  let leanHits = countMatches(padded, LEAN_METHODS, signals);
+  let friedHits = countMatches(padded, FRIED_METHODS, signals);
+  // "Stir fried" trips the bare "fried" token but is a lean, low-oil method —
+  // undo that false positive and credit it as lean instead.
+  const stirPhrase = has(padded, "stir fried") ? "stir fried" : has(padded, "stir fry") ? "stir fry" : null;
+  if (stirPhrase) {
+    if (friedHits > 0) {
+      friedHits -= 1;
+      const i = signals.indexOf("fried");
+      if (i !== -1) signals.splice(i, 1);
+    }
+    leanHits += 1;
+    signals.push(stirPhrase);
+  }
   const richHeavyHits = countMatches(padded, RICH_HEAVY, signals);
   const richMildHits = countMatches(padded, RICH_MILD, signals);
   const vegHits = countMatches(padded, VEG_SIGNALS, signals);

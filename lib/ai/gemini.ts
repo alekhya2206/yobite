@@ -2,7 +2,9 @@
 import { parseDishList } from "./parseDishList";
 import { ProviderError, type ReadMenu } from "./types";
 
-const MODEL = "gemini-2.0-flash";
+// gemini-2.5-flash: current free-tier vision model. (2.0-flash has limit:0 on
+// newer accounts; 2.5 is both available on free tier and a stronger reader.)
+const MODEL = "gemini-2.5-flash";
 const PROMPT =
   "You are reading a restaurant menu image. Extract ONLY the orderable dish names. " +
   "Ignore prices, section headers, descriptions, and addresses. " +
