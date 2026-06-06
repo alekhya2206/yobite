@@ -128,8 +128,9 @@ at least one key (both have free tiers, no card):
 - `GEMINI_API_KEY` — primary (Gemini Flash). https://aistudio.google.com/apikey
 - `OPENROUTER_API_KEY` — fallback (Qwen-VL). https://openrouter.ai/keys
 
-Unit tests mock the providers and need no keys. The key-gated integration test
-(`lib/ai/integration.test.ts`) runs only when `GEMINI_API_KEY` is set.
+Unit tests mock the providers and need no keys. The live integration test
+(`lib/ai/integration.test.ts`) runs only when an AI key is set **and** a sample photo
+exists at `lib/ai/fixtures/menu.jpg`; otherwise it skips.
 
 ## Project structure
 

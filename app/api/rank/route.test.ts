@@ -22,4 +22,25 @@ describe("POST /api/rank", () => {
     expect((await post({ goalText: "x" })).status).toBe(400);
     expect((await post({ dishes: [] })).status).toBe(400);
   });
+
+  it("returns 400 for an invalid goalId", async () => {
+    const res = await post({ dishes: ["Grilled Chicken Tikka"], goalId: "garbage" });
+    expect(res.status).toBe(400);
+  });
+
+  it("honors a valid goalId over goalText", async () => {
+    const res = await post({
+      dishes: ["Grilled Chicken Tikka", "Loaded Nachos"],
+      goalId: "fat-loss",
+      goalText: "high protein",
+    });
+    expect(res.status).toBe(200);
+    expect((await res.json()).best).not.toBeNull();
+  });
+
+  it("tolerates blank/non-string dishes by normalizing them out", async () => {
+    const res = await post({ dishes: ["Grilled Chicken Tikka", "", 123], goalText: "high protein" });
+    expect(res.status).toBe(200);
+    expect((await res.json()).best).not.toBeNull();
+  });
 });
