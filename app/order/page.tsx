@@ -31,6 +31,16 @@ export default function OrderPage() {
   const [error, setError] = useState("");
   const [meal, setMeal] = useState<FullMeal | null>(null);
 
+  // Close the "Plan a full meal" dialog on Escape (a11y for the aria-modal sheet).
+  useEffect(() => {
+    if (!meal) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMeal(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [meal]);
+
   const load = useCallback(async () => {
     const session = getSession();
     if (!session) {
