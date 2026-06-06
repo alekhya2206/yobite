@@ -165,10 +165,12 @@ swap a one-line change.
 the scoring (fast, free, testable, explainable; keeps API/rate-limit pressure low). Keep the
 `rank()`/`RankResult` contract.
 
-**Data model (Postgres):** `profiles` (goal, dietary), `sessions` (one active per user via
-partial unique index; caches `menu_dishes` + `verdict` as JSONB so re-open never re-scans;
-status active|ended), `chat_messages`, `saved_restaurants`. Raw menu images NOT persisted by
-default (extract → discard). Ranking runs server-side and caches the verdict on the session.
+**Data model (Postgres):** `profiles` (goal, dietary), `restaurants` (per-user library: name,
+note, cached `menu_dishes` JSONB, `verified` flag, last_visited — populated by the user's own
+visits, ZERO sourcing cost), `sessions` (one active per user via partial unique index; points
+at a `restaurant`; caches per-meal goal + `verdict`; status active|ended). Raw menu images NOT
+persisted (extract → discard). Ranking runs server-side. **Revisiting a saved place loads its
+cached menu → skips scanning entirely.**
 
 **Failure handling:** scan → loading + 20s timeout + retry + Qwen-VL fallback + graceful
 "type/say it" if all fail (never silent); low-confidence read → lightweight confirm only when
@@ -194,9 +196,31 @@ Reuse: `lib/ranker` (contract stable), `knowledge.ts` (grounding ref), `lib/voic
   (splash/"preparing" + a few light questions) and **authentication** (Google / phone-OTP /
   Apple / email; and whether to require sign-in up front vs. "try first, sign in to save").
   The user has parked these as the final layer.
-- **Open scope calls:** does the Browse/menu **database** earn its build+maintenance cost for
-  v1? Is the **chatbot** v1 or later? Presence-vs-destination balance now that Browse exists.
-  Body weight later (waitlist?).
+### 7a. CEO review decisions — LOCKED (2026-06-06)
+
+Mode: **SCOPE REDUCTION** — cut to the sharpest test of the core premise: *will a real diner
+at a real local restaurant trust the pick enough to order it?* v1's job is to answer that with
+the least built.
+
+**v1 launch =** name the place → scan a local menu (or load it if visited before) → "what are
+you in the mood for?" (free-text/voice) → **verdict** (single best pick) → optional **"Plan a
+full meal"** (best starter / main / dessert) → end session → **place + menu saved to My Places**.
+Accounts + Sunset Coral throughout.
+
+LOCKED decisions:
+- **Browse REFRAMED, not cut:** Browse = **"My Places"** — the user's OWN visited local
+  restaurants, menu auto-cached on session end. Revisit → no re-scan. Zero sourcing cost
+  (user-generated). Ask the **place name at scan start**. Filters: **Visited** (user's own) +
+  **Verified** (our badge — filter ships, curated data deferred/light). Serves the local-place
+  wedge directly.
+- **"Plan a full meal" IN v1** — deterministic, reuses `lib/ranker` + `knowledge.ts` (group by
+  course, rank each). NOT an LLM chatbot. Secondary action off the verdict, never the auto
+  screen. Nails the multi-course "dinner with family" use case cheaply, low trust risk.
+- **Open-ended menu chat → v1.1 (deferred).** The free-text "ask anything about the menu" LLM
+  feature is the only true chatbot; open-ended + trust-risky → ship after the core loop is
+  trusted. Line: bounded/deterministic → v1; open-ended/LLM → v1.1.
+- **Presence thesis HELD.** No notifications, feeds, gamification, or discovery browsing.
+- **Body weight:** deferred (revisit post-validation).
 
 ---
 
@@ -248,11 +272,10 @@ In `.superpowers/brainstorm/7428-1780696706/content/`:
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
-| CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | — | not run (recommended next) |
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | CLEAR | SCOPE REDUCTION; Browse reframed to user-generated "My Places"; full-meal planner in v1; open-ended chat → v1.1; presence thesis held |
 | Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | CLEAR | scope reduced to C; backend/AI/engine/data-model locked; low-confidence-read gap resolved |
-| Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | design done in brainstorm; formal review pending |
+| Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | design done in brainstorm; formal review pending (recommended next) |
 
-- **UNRESOLVED:** none blocking. Open product-scope calls (is the curated Browse library worth
-  it? chatbot v1 vs later?) routed to `/plan-ceo-review`.
-- **VERDICT:** ENG REVIEW CLEARED — architecture locked for scope C. Recommended next:
-  `/plan-ceo-review` to lock product scope, then the design loop, then build.
+- **UNRESOLVED:** none. v1 scope locked (see §7a).
+- **VERDICT:** CEO + ENG CLEARED — scope and architecture locked. Recommended next: the design
+  loop (`/design-consultation` → rewrite DESIGN.md → `/design-review`), then build.
