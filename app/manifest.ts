@@ -2,14 +2,14 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "YoBite — Skip the menu math",
+    name: "YoBite — Order this.",
     short_name: "YoBite",
     description:
-      "Scan a menu, pick your goal, get one confident order. A ranker, not a calorie counter.",
+      "Scan a menu, say what you're in the mood for, get one confident order. A ranker, not a calorie counter.",
     start_url: "/",
     display: "standalone",
-    background_color: "#FAF6EF",
-    theme_color: "#2F7A57",
+    background_color: "#FFF1E6",
+    theme_color: "#FFF1E6",
     orientation: "portrait",
     categories: ["food", "health", "lifestyle"],
     icons: [
