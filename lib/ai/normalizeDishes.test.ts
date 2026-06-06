@@ -19,9 +19,7 @@ describe("normalizeDishes", () => {
   });
 
   it("returns an empty array for null/garbage input", () => {
-    // @ts-expect-error testing runtime guard
     expect(normalizeDishes(null)).toEqual([]);
-    // @ts-expect-error testing runtime guard
     expect(normalizeDishes("not an array")).toEqual([]);
   });
 });

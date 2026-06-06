@@ -20,7 +20,6 @@ describe("parseDishList", () => {
 
   it("returns [] for empty or non-string input", () => {
     expect(parseDishList("")).toEqual([]);
-    // @ts-expect-error runtime guard
     expect(parseDishList(undefined)).toEqual([]);
   });
 });

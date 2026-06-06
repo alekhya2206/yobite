@@ -11,7 +11,7 @@ const okResponse = (dishesJson: string) => ({
 
 describe("makeGeminiReadMenu", () => {
   it("posts the image and returns parsed dishes", async () => {
-    const fetchFn = vi.fn(async () => okResponse('["Paneer Tikka","Dal Makhani"]') as unknown as Response);
+    const fetchFn = vi.fn<typeof fetch>(async () => okResponse('["Paneer Tikka","Dal Makhani"]') as unknown as Response);
     const read = makeGeminiReadMenu({ apiKey: "k", fetchFn });
     const dishes = await read("BASE64DATA", "image/jpeg");
     expect(dishes).toEqual(["Paneer Tikka", "Dal Makhani"]);

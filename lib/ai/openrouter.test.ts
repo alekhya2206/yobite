@@ -4,7 +4,7 @@ import { makeOpenRouterReadMenu } from "./openrouter";
 
 describe("makeOpenRouterReadMenu", () => {
   it("posts the image as a data URL and returns parsed dishes", async () => {
-    const fetchFn = vi.fn(async () => ({
+    const fetchFn = vi.fn<typeof fetch>(async () => ({
       ok: true,
       json: async () => ({ choices: [{ message: { content: '["Veg Biryani"]' } }] }),
     }) as unknown as Response);
