@@ -173,7 +173,8 @@ export default function ScanPage() {
         <Link href="/" className={s.back} aria-label="Back">
           <BackIcon size={20} />
         </Link>
-        <span className={s.brand}>YoBite</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-mark.png" alt="YoBite" width={30} height={30} style={{ borderRadius: 8, display: "block" }} />
         <span className={s.barSpacer} />
         <div className={s.modeToggle} role="group" aria-label="Capture mode">
           <span className={`${s.modeOpt} ${s.modeActive}`}>Photo</span>
