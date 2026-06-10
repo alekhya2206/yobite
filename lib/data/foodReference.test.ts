@@ -25,4 +25,9 @@ describe("foodReference", () => {
   it("returns null for an unknown dish (AI estimate will fill the gap)", () => {
     expect(lookupFood("Klingon Gagh Stew")).toBeNull();
   });
+
+  it("respects word boundaries — 'unfried rice' must NOT match 'fried rice'", () => {
+    // (Copilot review) loose substring matching would wrongly ground this to fried rice.
+    expect(lookupFood("Unfried Rice")?.match).not.toBe("fried rice");
+  });
 });

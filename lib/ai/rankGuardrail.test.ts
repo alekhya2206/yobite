@@ -116,4 +116,20 @@ describe("toRankResult — adapter to the stable RankResult shape", () => {
     expect(res.dishCount).toBe(3);
     expect(res.all[0].score).toBeGreaterThan(res.all[1].score);
   });
+
+  it("emits exactly one 'best' even if the model labels several (Copilot review)", () => {
+    const r = ranking([
+      { name: "Chicken Biryani", tier: "best" },
+      { name: "Veg Fried Rice", tier: "best" }, // model error — must be demoted
+      { name: "Grilled Fish", tier: "best" },
+    ]);
+    const res = toRankResult(r, menu);
+    expect(res.all.filter((d) => d.tier === "best")).toHaveLength(1);
+  });
+
+  it("reflects the real ateToday in RankResult.ate (Copilot review)", () => {
+    const r = ranking([{ name: "Chicken Biryani", tier: "best" }, { name: "Grilled Fish", tier: "good" }]);
+    const res = toRankResult(r, menu, "2 eggs and a banana");
+    expect(res.ate.raw).toBe("2 eggs and a banana");
+  });
 });

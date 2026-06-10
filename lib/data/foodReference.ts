@@ -79,17 +79,20 @@ export const FOOD_REFERENCE: FoodRef[] = [
   { match: "kheer", carbs: "high", protein: "low", fat: "med", fiber: "low", calories: "high", quality: "low", glycemic: "high", vegetarian: true, note: "Sweetened milk-rice pudding — dessert, high sugar." },
 ];
 
-const norm = (s: string) => ` ${s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim()} `;
+const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Find the grounded record for a dish name — the LONGEST matching phrase wins, so
- *  "fried rice" beats "rice" and "grilled chicken breast" beats "grilled". */
+ *  "fried rice" beats "rice" and "grilled chicken breast" beats "grilled".
+ *
+ *  Matching is word-boundary aware with an optional plural suffix: it matches "mashed
+ *  potatoes" → "mashed potato" but NOT "unfried rice" → "fried rice" (Copilot review). */
 export function lookupFood(dishName: string): FoodRef | null {
-  const padded = norm(dishName);
+  const t = clean(dishName);
   let best: FoodRef | null = null;
   for (const ref of FOOD_REFERENCE) {
-    const phrase = ref.match;
-    const hit = phrase.includes(" ") ? padded.includes(` ${phrase} `) || padded.includes(`${phrase} `) || padded.includes(` ${phrase}`) : padded.includes(` ${phrase} `);
-    if (hit && (!best || phrase.length > best.match.length)) best = ref;
+    const re = new RegExp(`(^| )${escapeRe(ref.match)}(es|s)?( |$)`);
+    if (re.test(t) && (!best || ref.match.length > best.match.length)) best = ref;
   }
   return best;
 }

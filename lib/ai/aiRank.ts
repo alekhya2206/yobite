@@ -30,7 +30,7 @@ export function makeAIRank({ rankMenu, fallback }: Deps) {
         verdict = checkRanking(ai, dishes, mood);
       }
 
-      if (verdict.ok) return toRankResult(ai, dishes);
+      if (verdict.ok) return toRankResult(ai, dishes, ateToday);
       console.warn("[aiRank] guardrail rejected AI ranking twice, using deterministic:", verdict.reason);
       return fallback(dishes, mood, ateToday);
     } catch (err) {

@@ -127,19 +127,16 @@ const TIER_MAP: Record<AIRanking["dishes"][number]["tier"], RankTier> = {
 /** Turn a validated AI ranking into the stable RankResult the verdict screen consumes.
  *  The AI owns the order/tiers/reasons; the classifier supplies kind/profile/signals so
  *  downstream (planFullMeal, etc.) still works. */
-export function toRankResult(ai: AIRanking, menu: string[]): RankResult {
+export function toRankResult(ai: AIRanking, menu: string[], ateToday?: string): RankResult {
   const n = ai.dishes.length;
   const step = n > 1 ? 90 / (n - 1) : 0;
 
   const all: RankedDish[] = ai.dishes.map((d, i) => {
     const dish = classifyDish(d.name);
-    return {
-      ...dish,
-      score: Math.round(100 - i * step),
-      tier: i === 0 ? "best" : TIER_MAP[d.tier],
-      chips: d.chips,
-      reason: d.reason,
-    };
+    // Exactly one hero: the first dish is "best"; any other row the model also marked
+    // "best" is demoted to "good" so the UI never sees two best picks.
+    const tier: RankTier = i === 0 ? "best" : TIER_MAP[d.tier === "best" ? "good" : d.tier];
+    return { ...dish, score: Math.round(100 - i * step), tier, chips: d.chips, reason: d.reason };
   });
 
   const best = all.length > 0 ? all[0] : null;
@@ -155,7 +152,7 @@ export function toRankResult(ai: AIRanking, menu: string[]): RankResult {
     all,
     goalLabel: ai.goalLabel,
     bestWhy: ai.bestWhy || (best ? best.reason : ""),
-    ate: parseAte(""),
+    ate: parseAte(ateToday ?? ""), // honour real "eaten today" input in the RankResult contract
     dishCount: n,
   };
 }
