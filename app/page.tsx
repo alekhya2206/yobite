@@ -63,14 +63,22 @@ export default function Home() {
       <main className={s.main}>
         <header className={s.head}>
           <div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-mark.png"
-              alt="YoBite"
-              width={44}
-              height={44}
-              style={{ borderRadius: 11, display: "block", marginBottom: 10 }}
-            />
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-symbol.png" alt="" width={43} height={40} style={{ display: "block" }} />
+              <span
+                style={{
+                  fontFamily: "var(--display)",
+                  fontWeight: 800,
+                  fontSize: 25,
+                  letterSpacing: "-0.015em",
+                  lineHeight: 1,
+                }}
+              >
+                <span style={{ color: "var(--coral)" }}>Yo</span>
+                <span style={{ color: "var(--gold)" }}>Bite</span>
+              </span>
+            </div>
             <h1 className={s.greet}>Hungry?</h1>
             <p className={s.sub}>Point me at the menu — I&rsquo;ll pick.</p>
           </div>
