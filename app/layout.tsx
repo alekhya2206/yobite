@@ -25,11 +25,18 @@ export const metadata: Metadata = {
   applicationName: "YoBite",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "YoBite" },
-  icons: { icon: "/favicon.svg", apple: "/favicon.svg" },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "YoBite — Order this.",
     description: "Scan a menu, say your mood, get one confident order.",
     type: "website",
+    images: [{ url: "/logo.png", width: 1254, height: 1254, alt: "YoBite" }],
   },
 };
 

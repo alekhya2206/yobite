@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🍽️ YoBite
+<img src="public/logo.png" alt="YoBite" width="220" />
+
+# YoBite
 
 **Scan a restaurant's menu, tell it your mood, get one confident "order this" — with a reason.**
 A *ranker*, not a calorie calculator.
