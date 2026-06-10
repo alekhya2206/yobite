@@ -1,18 +1,11 @@
 // app/api/rank/route.ts
-import { rank } from "@/lib/ranker";
-import { classifyGoal } from "@/lib/ai/intent";
+// Ranks a menu for the diner's mood using Architecture B: the AI does the ranking,
+// a strict deterministic guardrail validates it, and the rule-based ranker is the fallback.
+import { aiRankFromEnv } from "@/lib/ai/aiRank";
 import { normalizeDishes } from "@/lib/ai/normalizeDishes";
-import type { Goal, GoalId } from "@/lib/ranker/types";
-
-const VALID_GOALS: ReadonlySet<string> = new Set([
-  "high-protein",
-  "fat-loss",
-  "balanced",
-  "custom",
-]);
 
 export async function POST(req: Request): Promise<Response> {
-  let body: { dishes?: unknown; goalText?: string; goalId?: unknown; ateToday?: string };
+  let body: { dishes?: unknown; mood?: unknown; ateToday?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -28,21 +21,9 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  // goalId is arbitrary JSON at runtime — reject anything outside the known set so we
-  // never hand the ranker an unknown goal (which would yield an undefined label).
-  if (body.goalId !== undefined && !VALID_GOALS.has(body.goalId as string)) {
-    return Response.json(
-      { error: `Invalid goalId. Use one of: ${[...VALID_GOALS].join(", ")}` },
-      { status: 400 },
-    );
-  }
+  const mood = typeof body.mood === "string" ? body.mood : "";
+  const ateToday = typeof body.ateToday === "string" ? body.ateToday : undefined;
 
-  // A valid per-meal goalId (from the user's saved goal) wins; otherwise parse the free
-  // text; empty/skip falls back to balanced (handled inside classifyGoal).
-  const goal: Goal = body.goalId
-    ? { id: body.goalId as GoalId }
-    : classifyGoal(body.goalText ?? "");
-
-  const result = rank({ menuText: dishes.join("\n"), goal, ateToday: body.ateToday });
+  const result = await aiRankFromEnv()(dishes, mood, ateToday);
   return Response.json(result);
 }

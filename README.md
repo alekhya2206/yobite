@@ -1,8 +1,10 @@
 <div align="center">
 
-# 🍽️ YoBite
+<img src="public/logo.png" alt="YoBite" width="220" />
 
-**Scan a restaurant's menu, tell it your goal, get one confident "order this" — with reasons.**
+# YoBite
+
+**Scan a restaurant's menu, tell it your mood, get one confident "order this" — with a reason.**
 A *ranker*, not a calorie calculator.
 
 > **North star:** *"The menu should not flesh in my mind."*
@@ -21,22 +23,42 @@ A *ranker*, not a calorie calculator.
 
 ## What it is
 
-A mobile-first PWA (with a native iOS/Android app planned). You point it at any menu —
-**film it, photograph it, or say it out loud** — tell it what you're in the mood for *this
-meal*, and it hands back a **poster verdict**: one best pick, a few "also good," and gently
-flagged "heavier" choices, each with an honest *why*. No order is ever placed; it's a
-suggestion that gets you decided in seconds.
+A mobile-first PWA (native iOS/Android planned). You point it at any menu — **photograph it,
+or say it out loud** — tell it what you're in the mood for *this meal* ("high protein", "high
+carb but the better kind", "something light", "veg only"), and it hands back a **poster
+verdict**: one best pick, a few "also good," and gently flagged "heavier" choices, each with an
+honest *why*. No order is ever placed; it's a suggestion that gets you decided in seconds.
 
-It's deliberately built for **presence, not engagement** — no streaks, no feed to scroll, no
-daily-login loops. The best session is the shortest one.
+Built for **presence, not engagement** — no streaks, no feed, no daily-login loops. The best
+session is the shortest one.
+
+---
+
+## What makes the ranking *correct* (the interesting part)
+
+YoBite doesn't just match a macro — it judges **quality**. Ask for "high carb" and it won't
+hand you instant noodles; it knows a whole-food carb beats a refined one. Real output:
+
+```
+You: "I'm in the mood for high carbs"
+Menu: Chow Mein · Fried Rice · Maggi · Mashed Potatoes · White Rice
+
+Order this →  Mashed Potatoes   "Whole potato — complex carbs + fibre, lower GI than refined noodles"
+Also good     White Rice        "Single refined grain, but not ultra-processed"
+              Fried Rice        "Refined rice + oil — a better carb than refined-flour noodles"
+Heavier       Chow Mein         "Refined-flour noodles, oil-fried, low in fibre"
+              Maggi             "Ultra-processed instant noodles — negligible fibre/micronutrients"
+```
+
+Same logic across every axis — protein (grilled beats fried), fibre (lentils beat white rice),
+calories, sweetness, and a hard **veg-only** filter. Identical input → identical output, every time.
 
 ---
 
 ## Design
 
-YoBite v2 is **"Vivid"** — bold color blocks, big type, expressive — in the **Sunset Coral**
-palette with **Bricolage Grotesque + DM Sans**. (The full design system lives in
-[`DESIGN.md`](DESIGN.md).)
+YoBite is **"Vivid"** — bold color blocks, big type, expressive — in the **Sunset Coral**
+palette with **Bricolage Grotesque + DM Sans**. Full system in [`DESIGN.md`](DESIGN.md).
 
 | Home · Scan · Verdict | Per-meal intent · Chatbot · Active session |
 |---|---|
@@ -48,7 +70,7 @@ palette with **Bricolage Grotesque + DM Sans**. (The full design system lives in
 
 **Design system in one line:** coral `#E0492F` · gold `#F5A623` · peach canvas `#FFF1E6` ·
 warm ink `#2A1207` · terracotta `#BE5E3D` for "heavier" (informs, never scolds — never
-stop-sign red).
+stop-sign red). Light-mode only, to match the approved mockups.
 
 ---
 
@@ -56,99 +78,121 @@ stop-sign red).
 
 ### The flow
 ```
-Home ──(Scan)──> Camera / Voice ──> "What are you in the mood for?" ──> Verdict ⇄ Chatbot
+Home ──(Scan)──> Camera / Voice ──> "What are you in the mood for?" ──> Verdict
 Home ──(Browse)─> a restaurant you've saved ──────────────────────────> Verdict   (no re-scan)
 ```
 Scanning a place starts an **active dining session** that lives on your home screen and
 persists across closing the app — reopen and you're back at your picks instantly, until you
 tap **End**.
 
-### The ranking brain — `lib/ranker/`
-A transparent, deterministic engine that reads the *dish name*:
-```
-parse → classify → score → bucket → reasons
-```
-- **`parse.ts`** — menu text → clean dish names (strips prices, headers, dotted leaders).
-- **`knowledge.ts`** — food token tables: cooking methods (lean/fried/rich), proteins with
-  gram estimates, refined carbs, veg/dessert/drink. Indian & Indo-Chinese first.
-- **`classify.ts` / `score.ts`** — name → honest `DishProfile`, then per-goal weighting.
-- **`reasons.ts`** — the honest "why" (*"Grilled, high protein, lighter on refined carbs"*)
-  instead of a fake-precise calorie count.
+### The ranking brain — "AI ranks, a guardrail enforces correctness"
 
-In v2 an LLM **reads** the menu image and **grounds** the nutrition reasoning, but the
-deterministic ranker still does the scoring — so verdicts stay fast, explainable, and testable.
+```
+mood text  +  menu dishes
+     │
+     ▼
+🤖 AI ranks (Groq, free)        — orders the dishes for your mood and writes grounded reasons,
+   grounded by our food data       fed our research reference as AUTHORITATIVE facts
+     │   returns ordered tiers + a low/med/high read of carbs/protein/calories/quality per dish
+     ▼
+🛡️ Strict guardrail (deterministic, instant, fully tested) rejects:
+     • invented dishes / dropped dishes
+     • an ultra-processed or low-quality best pick when a better option exists
+     • a best pick that contradicts the mood (e.g. low-carb dish for a high-carb request)
+     • non-veg dishes when the mood is "veg only"
+   → one corrective retry → deterministic fallback ranker
+     ▼
+🏆 Verdict  (best · also good · heavier, each with a reason)
+```
+
+The separation is the point: **the AI only proposes; the guardrail disposes.** The AI can't
+hallucinate a dish or hand you a pick that contradicts what you asked — so the answer is both
+intelligent *and* trustworthy.
+
+Key modules in `lib/`:
+- **`ai/rankMenu.ts`** — the Groq ranking call + the structured-output parser.
+- **`ai/rankGuardrail.ts`** — the deterministic validator + the adapter to the stable `RankResult`.
+- **`ai/aiRank.ts`** — orchestration: AI → guardrail → retry → fallback.
+- **`data/foodReference.ts`** — the **research-grounded reference** (common dishes × carbs/protein/
+  fat/fibre/calories/quality/glycemic + a cited "why", seeded from USDA / IFCT / GI principles).
+  Injected into the prompt and treated as authoritative by the guardrail.
+- **`ranker/`** — the original deterministic engine (parse → classify → score → reasons), now the
+  free, offline **fallback** floor when the AI is unavailable.
 
 ---
 
-## Architecture (v2, scope: focused v1 + accounts)
+## Architecture
 
 ```
         [ PWA — Next.js 15 / React 19 ]      (native iOS/Android later, same backend)
-   Home · Scan · Intent · Verdict · Chatbot · Browse · Saved · Profile
+   Home · Scan · Intent · Verdict · Browse · Saved · Profile
                      │ HTTPS
                      ▼
      [ Serverless API routes ]  ← hold all AI keys (never in the browser)
         /api/scan  → vision LLM: menu image → dish[]
-        /api/rank  → lib/ranker (deterministic) + LLM "why"
-        /api/chat  → LLM: menu Q&A grounded in the session's dishes
+        /api/rank  → AI ranking + strict guardrail + grounded food reference
             │                                   │
             ▼                                   ▼
-   [ Supabase ]                          [ AI providers ]
-     Auth (Google / phone-OTP)            Gemini Flash (free) — primary
-     Postgres (profiles, sessions,        OpenRouter / Qwen-VL — fallback
-       menus, history), Storage
+   [ local-first storage ]              [ AI providers ]
+     profile/goal, active session,        Groq (free tier) — PRIMARY (vision + ranking)
+     My Places (localStorage now;         Gemini Flash — optional fallback
+     Supabase auth + Postgres later)      OpenRouter / Qwen-VL — optional fallback
 ```
 
-- **AI is free-tier by design** (Gemini Flash primary, OpenRouter fallback) behind a
-  swappable provider abstraction — quality without spend, until validated.
-- Full design + architecture decisions:
-  [`docs/superpowers/specs/2026-06-06-yobite-v2-redesign-design.md`](docs/superpowers/specs/2026-06-06-yobite-v2-redesign-design.md).
+- **Free-tier by design** — Groq's free tier runs the vision scan + the ranking; the
+  deterministic ranker needs no API at all. Providers sit behind a swappable abstraction.
+- **Local-first** — profile, the active session, and My Places live in `localStorage`;
+  Supabase (auth + cross-device sync) is a later swap behind the same interface.
 
 ---
 
 ## Tech stack
 
 Next.js 15 (App Router) · React 19 · TypeScript · CSS Modules · Vitest · PWA (`app/manifest.ts`).
-Planned: Supabase (auth + Postgres + storage) · Gemini Flash / OpenRouter for vision + chat.
+AI: Groq (free tier) for vision + ranking, with Gemini/OpenRouter fallbacks. Storage: localStorage
+now, Supabase planned.
 
 ## Run it
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000  (mobile-first — open via the Network URL on a phone)
-npm test         # ranking-brain test suite (vitest)
-npm run build    # production build
+npm run dev          # http://localhost:3000  (mobile-first)
+npm run dev:https    # https on your LAN, so the phone camera works (getUserMedia needs a secure origin)
+npm test             # full test suite (vitest) — 140+ tests, providers mocked, no keys needed
+npm run build        # production build
 ```
 
-### AI keys (free tier)
+### AI key (free)
 
-The scan + rank pipeline calls a vision model. Copy `.env.example` to `.env.local` and add
-at least one key (both have free tiers, no card):
+Scan + rank call a free-tier model. Copy `.env.example` to `.env.local` and add a key:
 
-- `GEMINI_API_KEY` — primary (Gemini Flash). https://aistudio.google.com/apikey
-- `OPENROUTER_API_KEY` — fallback (Qwen-VL). https://openrouter.ai/keys
+- `GROQ_API_KEY` — **primary** (vision + ranking), free tier, very fast. https://console.groq.com/keys
+- `GEMINI_API_KEY` — optional fallback. https://aistudio.google.com/apikey
+- `OPENROUTER_API_KEY` — optional fallback. https://openrouter.ai/keys
 
-Unit tests mock the providers and need no keys. The live integration test
-(`lib/ai/integration.test.ts`) runs only when an AI key is set **and** a sample photo
-exists at `lib/ai/fixtures/menu.jpg`; otherwise it skips.
+Unit tests mock the providers and need no keys.
 
 ## Project structure
 
 ```
-app/        Next.js routes (landing, scan, order) + globals.css design tokens
-lib/ranker/ the deterministic ranking brain (+ tests)
-lib/        ocr, voice, store helpers
-components/ shared UI (Logo, …)
-docs/       design spec + design screenshots
-DESIGN.md   the visual source of truth
+app/         Next.js routes (home, scan, intent, order/verdict, browse, saved, profile) + API routes
+lib/ai/      AI providers (Groq/Gemini/OpenRouter), AI ranking, guardrail, scan pipeline
+lib/data/    foodReference — the research-grounded nutrition reference
+lib/ranker/  the deterministic fallback ranker (+ tests)
+lib/storage/ local-first storage (profile, session, My Places)
+components/   shared UI (Logo, icons, Deck …)
+docs/        design spec + design screenshots + known-issues log
+DESIGN.md    the visual source of truth
 ```
 
 ## Status & roadmap
 
-- ✅ **v1 baseline** built (offline heuristic ranker, 3 screens, 28 tests green).
-- 🎨 **v2 redesign** — design complete, architecture locked (see the spec). Now building:
-  new design system → vision-AI scan → grounded ranking → chatbot → active sessions → auth.
-- ⏭️ **Later:** curated restaurant-menu library (Browse), video scanning, native apps.
+- ✅ **v2 UI** built — Home, Scan (in-app camera), Intent, Verdict, deck nav (local-first).
+- ✅ **AI ranking (Architecture B)** — Groq ranks, a strict guardrail enforces correctness;
+  grounded by a research food reference. Quality-aware across carbs/protein/fibre/calories/veg.
+- ✅ **Grounded data v1** — a curated nutrition reference, injected + authoritative.
+- ⏭️ **Next:** scale the food reference (free batch via local Ollama / Groq + public datasets);
+  Supabase auth + sync; the menu chatbot; video scanning; native apps.
 
 ---
 

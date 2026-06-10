@@ -1,205 +1,220 @@
 "use client";
+// app/order/page.tsx
+// The verdict poster — the heart of YoBite. Reads the active session, ranks it
+// (or shows the cached verdict instantly), and renders one confident "Order this".
+// Amendment 2: cache fast-path + verdict caching; retry copy "…Tap to retry."
+// DR-1: AA-safe "Heavier — go easy" (terracotta lives in the left border, not text).
+// DR-2: signature calm reveal — breathing pulse loader + poster rise (no spin).
+// OV-2: no-session branch returns null (no blank shell flash).
+// OV-4: tests unstub fetch between cases.
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { LogoMark } from "@/components/Logo";
-import { DEMO_INPUT, loadInput } from "@/lib/store";
-import { askYoBite, detectKnownChain, rank } from "@/lib/ranker";
-import { listenOnce, speechSupported } from "@/lib/voice";
-import type { RankInput, RankedDish, Tier } from "@/lib/ranker/types";
+import { BackIcon, CheckIcon, CloseIcon } from "@/components/icons";
+import { clearSession, getSession, saveSession } from "@/lib/storage";
+import { planFullMeal, type FullMeal } from "@/lib/meal/planFullMeal";
+import type { RankResult, RankedDish } from "@/lib/ranker/types";
 import s from "./order.module.css";
-
-const dotClass: Record<Tier, string> = { best: s.dotG, good: s.dotG, okay: s.dotA, heavy: s.dotT };
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="11" fill="var(--green)" />
-      <path d="M7 12.5 l3 3 l7 -7.5" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 export default function OrderPage() {
   const router = useRouter();
-  // null = still loading; set once on mount (sessionStorage is client-only).
-  const [input, setInput] = useState<RankInput | null>(null);
-  const [picked, setPicked] = useState(false);
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [listening, setListening] = useState(false);
+  // Hold the router in a ref so `load` stays referentially stable. The mocked
+  // useRouter returns a fresh object each render; depending on it would make the
+  // load effect re-fire on every state update → an infinite fetch loop.
+  const routerRef = useRef(router);
+  routerRef.current = router;
 
+  const [result, setResult] = useState<RankResult | null>(null);
+  const [place, setPlace] = useState("");
+  // null = no session yet (redirecting); true = ranking; false = settled.
+  const [loading, setLoading] = useState<boolean | null>(null);
+  const [error, setError] = useState("");
+  const [meal, setMeal] = useState<FullMeal | null>(null);
+
+  // Close the "Plan a full meal" dialog on Escape (a11y for the aria-modal sheet).
   useEffect(() => {
-    setInput(loadInput() ?? DEMO_INPUT);
+    if (!meal) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMeal(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [meal]);
+
+  const load = useCallback(async () => {
+    const session = getSession();
+    if (!session) {
+      routerRef.current.replace("/");
+      return; // OV-2: leave loading null → render null, no blank shell.
+    }
+    setPlace(session.placeName);
+    // Amendment 2: cached verdict → instant ("Back to your picks" re-open), no fetch.
+    if (session.verdict) {
+      setResult(session.verdict);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/rank", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dishes: session.dishes,
+          // The diner's raw mood drives the AI ranking (Architecture B).
+          mood: session.mood ?? "",
+          ateToday: session.ateToday,
+        }),
+      });
+      if (!res.ok) throw new Error("rank failed");
+      const data = (await res.json()) as RankResult;
+      setResult(data);
+      // The rank call can take seconds; if the user tapped "End" (clearSession) meanwhile,
+      // don't resurrect the cleared session by caching the verdict onto a stale snapshot.
+      const current = getSession();
+      if (current?.id === session.id) saveSession({ ...current, verdict: data });
+    } catch {
+      setError("Couldn't rank the menu just now. Tap to retry.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const result = useMemo(() => (input ? rank(input) : null), [input]);
-  const chain = useMemo(() => (input ? detectKnownChain(input.menuText) : null), [input]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  if (!result) {
-    return <div className="app" aria-busy="true" />;
+  function end() {
+    clearSession();
+    router.push("/");
   }
 
-  if (!result.best) {
+  // OV-2: no active session → render nothing while the redirect lands.
+  if (loading === null) return null;
+
+  // DR-2: the signature calm reveal — a breathing pulse, never a spinner.
+  if (loading) {
     return (
       <div className="app">
-        <Header />
-        <main className={s.main}>
-          <div className={s.empty}>
-            <h2>Hmm — I couldn&rsquo;t read any dishes.</h2>
-            <p>The menu text came through empty. Scan a clearer photo or paste the dish names, and I&rsquo;ll give you a pick.</p>
-            <Link href="/scan" className={s.rescan} style={{ maxWidth: 260, margin: "0 auto" }}>↻ Scan a menu</Link>
-          </div>
-        </main>
+        <div className={s.thinking}>
+          <span className={s.breath} aria-hidden="true" />
+          <p>Finding your pick…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !result || !result.best) {
+    return (
+      <div className="app">
+        <div className={s.thinking}>
+          <p>{error || "Nothing rankable on this menu."}</p>
+          <button className={s.retry} onClick={load}>
+            Try again
+          </button>
+        </div>
       </div>
     );
   }
 
   const best = result.best;
 
-  function ask() {
-    if (!question.trim() || !result) return;
-    setAnswer(askYoBite(question, result));
-  }
-
-  function startVoice() {
-    if (listening) return;
-    setListening(true);
-    const handle = listenOnce(
-      (text, isFinal) => {
-        setQuestion(text);
-        if (isFinal && result) setAnswer(askYoBite(text, result));
-      },
-      () => setListening(false),
-    );
-    if (!handle) setListening(false);
-  }
-
   return (
     <div className="app">
-      <Header />
-      <main className={s.main}>
-        {/* Verified pill: only for recognized chains; local spots stay clean. */}
-        {chain && (
-          <div className={s.verifiedRow}>
-            <span className={s.verified}><CheckIcon /> {chain} · known chain</span>
-          </div>
-        )}
+      <header className={s.bar}>
+        <button className={s.back} onClick={() => router.back()} aria-label="Back">
+          <BackIcon size={20} />
+        </button>
+        <span className={s.place}>{place}</span>
+        <span className={s.goalPill}>{result.goalLabel}</span>
+        <span className={s.barSpacer} />
+        <button className={s.end} onClick={end} aria-label="End session">
+          End <CloseIcon size={14} />
+        </button>
+      </header>
 
-        <div className={s.eyebrowRow}>
-          <p className={s.eyebrow}>Order this</p>
-          <span className={s.goalTag}><span className={s.d2} />{result.goalLabel}</span>
-        </div>
-
-        {/* HERO PICK */}
-        <div className={s.pickHero}>
-          <span className={s.badge}><span className={s.d} /> Best for you</span>
-          <h1 className={s.pickName}>{best.name}</h1>
-          <p className={s.pickWhy}>{result.bestWhy}</p>
+      <main className={s.poster}>
+        <section className={s.hero}>
+          <span className={s.heroEyebrow}>Order this · {result.goalLabel}</span>
+          <h1 className={s.heroName}>{best.name}</h1>
           <div className={s.chips}>
             {best.chips.map((c) => (
-              <span key={c} className={s.chip}>{c}</span>
+              <span key={c} className={s.chip}>
+                {c}
+              </span>
             ))}
           </div>
-          <div className={s.heroFoot}>
-            <span className={s.est}>
-              <b>~{best.profile.proteinG}g</b> protein · est. <b>{best.profile.calories} cal</b>
-            </span>
-            <button className={`${s.btnPick}${picked ? ` ${s.picked}` : ""}`} onClick={() => setPicked(true)}>
-              {picked ? "✓ Picked" : "Pick this"}
-            </button>
-          </div>
-        </div>
+          <p className={s.why}>{result.bestWhy}</p>
+        </section>
 
-        {/* ALSO GOOD */}
         {result.alsoGood.length > 0 && (
-          <>
-            <p className={s.eyebrow}>Also good</p>
+          <section className={s.block}>
+            <h2 className={s.blockTitle}>Also good</h2>
             {result.alsoGood.map((d) => (
-              <ListRow key={d.name} d={d} />
+              <AlsoRow key={d.name} dish={d} />
             ))}
-          </>
+          </section>
         )}
 
-        {/* HEAVIER */}
         {result.heavier.length > 0 && (
-          <>
-            <p className={s.eyebrow}>Heavier choices</p>
-            <div className={s.heavier}>
-              {result.heavier.map((d) => (
-                <div key={d.name} className={s.heavyRow}>
-                  <span className={`${s.dot} ${s.dotT}`} />
-                  <span className={s.body}>
-                    <span className={s.hn}>{d.name}</span>
-                    <span className={s.hr}>{d.reason}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
+          <section className={`${s.block} ${s.heavyBlock}`}>
+            <h2 className={s.blockTitle}>Heavier — go easy</h2>
+            {result.heavier.map((d) => (
+              <div key={d.name} className={s.heavyRow}>
+                <span className={s.heavyName}>{d.name}</span>
+                <span className={s.heavyReason}>{d.reason}</span>
+              </div>
+            ))}
+          </section>
         )}
-
-        {answer && (
-          <div className={s.answer} role="status">{answer}</div>
-        )}
-
-        {/* Ask + rescan — inline at the end of the poster. */}
-        <div className={s.actions}>
-          <form
-            className={s.ask}
-            onSubmit={(e) => {
-              e.preventDefault();
-              ask();
-            }}
-          >
-            <label htmlFor="ask" className="sr-only">Ask YoBite about the menu</label>
-            <input
-              id="ask"
-              type="text"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Ask YoBite — “any good veg starters?”"
-            />
-            {speechSupported() && (
-              <button
-                type="button"
-                className={`mic${listening ? " listening" : ""}`}
-                aria-label={listening ? "Listening…" : "Ask by voice"}
-                onClick={startVoice}
-              >
-                🎙
-              </button>
-            )}
-          </form>
-          <Link href="/scan" className={s.rescan}>↻ Scan another menu</Link>
-        </div>
       </main>
+
+      <div className={s.planBarWrap}>
+        <button className={s.planBar} onClick={() => setMeal(planFullMeal(result))}>
+          Plan a full meal
+        </button>
+      </div>
+
+      {meal && (
+        <div className={s.sheetWrap} role="dialog" aria-label="Plan a full meal" aria-modal="true">
+          <div className={s.sheetScrim} onClick={() => setMeal(null)} />
+          <div className={s.sheet}>
+            <div className={s.sheetHead}>
+              <h2 className={s.sheetTitle}>A full meal</h2>
+              <button className={s.sheetClose} onClick={() => setMeal(null)} aria-label="Close">
+                <CloseIcon size={18} />
+              </button>
+            </div>
+            <Course label="Starter" dish={meal.starter} />
+            <Course label="Main" dish={meal.main} />
+            <Course label="Dessert" dish={meal.dessert} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function Header() {
+function AlsoRow({ dish }: { dish: RankedDish }) {
   return (
-    <header className="topbar">
-      <div className="topbar-row">
-        <Link href="/scan" className="icon-btn" aria-label="Back">‹</Link>
-        <span className="tb-title">Your order</span>
-        <LogoMark size={26} />
+    <div className={s.alsoRow}>
+      <div>
+        <span className={s.alsoName}>{dish.name}</span>
+        <span className={s.alsoReason}>{dish.reason}</span>
       </div>
-    </header>
+      <span className={s.alsoCheck} aria-hidden="true">
+        <CheckIcon size={20} />
+      </span>
+    </div>
   );
 }
 
-function ListRow({ d }: { d: RankedDish }) {
+function Course({ label, dish }: { label: string; dish: RankedDish | null }) {
   return (
-    <button className={s.pick} type="button">
-      <span className={`${s.dot} ${dotClass[d.tier]}`} />
-      <span className={s.body}>
-        <span className={s.pn}>{d.name}</span>
-        <span className={s.pr}>{d.reason}</span>
-      </span>
-      <span className={s.chev} aria-hidden="true">›</span>
-    </button>
+    <div className={s.course}>
+      <span className={s.courseLabel}>{label}</span>
+      <span className={s.courseDish}>{dish ? dish.name : "—"}</span>
+    </div>
   );
 }

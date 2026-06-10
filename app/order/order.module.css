@@ -1,83 +1,297 @@
-/* Result screen — the poster. Ported from the approved prototype. */
+/* app/order/order.module.css
+   Verdict poster. Tokens from globals.css / DESIGN.md (Vivid / Sunset Coral / Bricolage).
+   The coral "Order this" hero is the memorable moment; everything else stays quiet. */
 
-.main { flex: 1; padding: 6px 16px 44px; }
-
-.verifiedRow { display: flex; justify-content: flex-end; padding-top: 14px; }
-.verified {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--muted);
-  background: var(--surface); border: 1px solid var(--hair); padding: 5px 11px; border-radius: var(--r-full);
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: var(--s-md);
+}
+.back {
+  display: flex; flex-shrink: 0;
+  width: 40px; height: 40px;
+  align-items: center; justify-content: center;
+  border-radius: var(--r-full);
+  border: 1px solid var(--hair);
+  background: var(--surface);
+  color: var(--ink);
+}
+.place {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.goalPill {
+  background: var(--coral-soft);
+  color: var(--coral);
+  border-radius: var(--r-full);
+  padding: 3px var(--s-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.barSpacer { flex: 1; }
+.end {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.85rem;
 }
 
-.eyebrow { font-size: 11.5px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; color: var(--muted); margin: 22px 0 10px; }
-.eyebrowRow { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 10px; }
-.eyebrowRow .eyebrow { margin: 0; }
-.goalTag {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--green);
-  background: var(--green-soft); padding: 5px 11px; border-radius: var(--r-full);
+/* DR-2: the verdict settles in as a whole (calm rise + fade), not just the hero. */
+.poster {
+  flex: 1;
+  padding: 0 var(--s-md) calc(var(--s-3xl) + var(--s-xl));
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-md);
+  animation: rise 0.28s ease-out;
 }
-.goalTag .d2 { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
-.pickHero {
-  background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: 20px 18px 18px;
-  box-shadow: 0 10px 28px -16px rgba(0,0,0,.28); animation: rise .35s ease-out both;
+/* ---- hero pick ---- */
+.hero {
+  background: var(--coral);
+  color: #fff;
+  border-radius: var(--r-xl);
+  padding: var(--s-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-sm);
+  box-shadow: 0 12px 30px -14px rgba(224, 73, 47, 0.7);
 }
-@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.badge {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .07em; color: var(--green); background: var(--green-soft); padding: 6px 12px; border-radius: var(--r-full); margin-bottom: 13px;
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
-.badge .d { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-.pickName { font-family: var(--display); font-weight: 600; font-size: 30px; line-height: 1.08; letter-spacing: -.022em; }
-.pickWhy { font-size: 15px; color: var(--muted); margin: 10px 0 14px; }
-.chips { display: flex; flex-wrap: wrap; gap: 7px; }
-.chip { font-size: 12.5px; font-weight: 500; color: var(--ink); background: var(--paper); border: 1px solid var(--hair); padding: 6px 11px; border-radius: var(--r-full); }
-.chipMacro { color: var(--muted); font-variant-numeric: tabular-nums; }
-.heroFoot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--hair); }
-.est { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.est b { color: var(--ink); font-weight: 600; }
-.btnPick {
-  font-family: var(--body); font-weight: 600; font-size: 15px; background: var(--green); color: #fff; border: none;
-  min-height: 44px; padding: 0 20px; border-radius: var(--r-full); cursor: pointer; transition: filter .15s ease;
+.heroEyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
-.btnPick:hover { filter: brightness(1.07); }
-.btnPick.picked { background: var(--green-soft); color: var(--green); }
-
-.pick {
-  display: flex; align-items: center; gap: 13px; width: 100%; text-align: left; background: var(--surface);
-  border: 1px solid var(--hair); border-radius: var(--r-md); padding: 14px 16px; margin-top: 10px; cursor: pointer;
-  transition: border-color .15s ease; font-family: var(--body);
+.heroName {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 2.1rem;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
-.pick:hover { border-color: var(--green); }
-.pick .body { flex: 1; min-width: 0; }
-.pn { display: block; font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: -.01em; color: var(--ink); }
-.pr { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.dotG { background: var(--green); } .dotA { background: var(--amber); } .dotT { background: var(--terra); }
-.chev { color: var(--muted); font-size: 18px; flex-shrink: 0; }
-
-.heavier { margin-top: 12px; border: 1px solid var(--hair); border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
-.heavyRow { display: flex; align-items: center; gap: 11px; padding: 13px 16px; border-bottom: 1px solid var(--hair); }
-.heavyRow:last-child { border-bottom: none; }
-.heavyRow .body { flex: 1; min-width: 0; }
-.hn { display: block; font-weight: 500; font-size: 15px; color: var(--ink); }
-.hr { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
-
-.empty { text-align: center; padding: 48px 8px; }
-.empty h2 { font-family: var(--display); font-weight: 600; font-size: 24px; letter-spacing: -.01em; margin-bottom: 8px; }
-.empty p { color: var(--muted); font-size: 15px; margin-bottom: 20px; }
-
-/* Ask + rescan live inline at the end of the poster (matches approved prototype). */
-.actions { display: flex; flex-direction: column; gap: 10px; margin-top: 30px; }
-.ask { display: flex; align-items: center; gap: 11px; background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-full); padding: 9px 10px 9px 16px; }
-.ask:focus-within { border-color: var(--green); }
-.ask input { flex: 1; border: none; background: transparent; font-family: var(--body); font-size: 14.5px; color: var(--ink); outline: none; min-width: 0; }
-.ask input::placeholder { color: var(--muted); }
-.rescan {
-  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 46px;
-  background: transparent; border: 1px solid var(--hair); border-radius: var(--r-full);
-  font-family: var(--body); font-weight: 600; font-size: 15px; color: var(--ink); cursor: pointer; transition: border-color .15s ease, color .15s ease;
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-sm);
 }
-.rescan:hover { border-color: var(--green); color: var(--green); }
+.chip {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-full);
+  padding: 4px var(--s-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.why {
+  opacity: 0.95;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
 
-/* the "ask" answer bubble */
-.answer { background: var(--green-soft); border-radius: var(--r-md); padding: 12px 14px; margin-top: 10px; font-size: 14px; color: var(--ink); animation: rise .25s ease-out both; }
+/* ---- blocks (also good / heavier) ---- */
+.block {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-lg);
+  padding: var(--s-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-sm);
+}
+.blockTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.alsoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-md);
+}
+.alsoCheck {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--green);
+}
+.alsoName {
+  display: block;
+  font-weight: 700;
+  color: var(--ink);
+}
+.alsoReason {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Matches the mockup: a clean white card with a terracotta tier heading and
+   readable (ink) dish names. The terracotta "Heavier — go easy" heading carries
+   the tier signal; dish names stay AA-safe ink on white (DR-1 intent preserved). */
+.heavyBlock .blockTitle {
+  color: var(--terra);
+}
+.heavyRow {
+  display: flex;
+  flex-direction: column;
+}
+.heavyName {
+  font-weight: 700;
+  color: var(--ink);
+}
+.heavyReason {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ---- plan-a-full-meal: full-width bottom bar (matches the mockup's bottom CTA
+   slot). Fixed, full app-width, sits above the safe area; the poster's bottom
+   padding clears it so nothing is obscured. ---- */
+.planBarWrap {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  z-index: 25;
+  width: 100%;
+  max-width: var(--app-w);
+  padding: var(--s-sm) var(--s-md) calc(var(--s-md) + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--paper) 70%, transparent);
+  pointer-events: none;
+}
+.planBar {
+  pointer-events: auto;
+  width: 100%;
+  background: var(--gold);
+  color: var(--gold-ink);
+  font-weight: 800;
+  font-size: 1.05rem;
+  padding: var(--s-md);
+  border: none;
+  border-radius: var(--r-full);
+  box-shadow: 0 10px 24px -10px rgba(245, 166, 35, 0.7);
+}
+
+/* ---- loading / error (DR-2: breathing pulse, no rotation) ---- */
+.thinking {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-md);
+  color: var(--muted);
+  padding: var(--s-xl);
+  text-align: center;
+  min-height: 60dvh;
+}
+.breath {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--r-full);
+  background: var(--coral);
+  animation: breathe 1.6s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+.retry {
+  background: var(--gold);
+  color: var(--gold-ink);
+  font-weight: 700;
+  border: none;
+  padding: var(--s-sm) var(--s-lg);
+  border-radius: var(--r-full);
+}
+
+/* ---- plan-a-full-meal sheet ---- */
+.sheetWrap {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.sheetScrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(42, 18, 7, 0.45);
+}
+.sheet {
+  position: relative;
+  width: 100%;
+  max-width: var(--app-w);
+  background: var(--surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: var(--s-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-md);
+  animation: rise 0.25s ease-out;
+}
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sheetTitle {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+.sheetClose {
+  background: none;
+  border: none;
+  color: var(--muted);
+}
+.course {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-md);
+  border-bottom: 1px solid var(--hair);
+  padding-bottom: var(--s-sm);
+}
+.courseLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.courseDish {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-align: right;
+}
