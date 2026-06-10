@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BackIcon, MicIcon } from "@/components/icons";
 import { getGoal, getSession, saveSession } from "@/lib/storage";
-import { resolveMealGoal } from "@/lib/meal/resolveMealGoal";
+import { goalToMood } from "@/lib/preferences/goalToMood";
 import { useVoiceInput } from "@/lib/useVoiceInput";
 import s from "./intent.module.css";
 
@@ -38,15 +38,17 @@ export default function IntentPage() {
     setReady(true);
   }, [router]);
 
+  // Store the raw mood for THIS meal. The AI does the ranking at /order — no intent call here.
+  // Empty (skip) → use the universal profile goal phrased as a mood.
   function commit(text: string) {
     const session = getSession();
     if (!session) {
       router.replace("/");
       return;
     }
-    const goal = resolveMealGoal(text, getGoal());
-    // Amendment 2: clear verdict cache whenever goal/ate changes.
-    saveSession({ ...session, goal, ateToday: ate.trim() || undefined, verdict: undefined });
+    const moodText = text.trim() || goalToMood(getGoal());
+    // Clear any cached verdict whenever the mood/ate changes.
+    saveSession({ ...session, mood: moodText, ateToday: ate.trim() || undefined, verdict: undefined });
     router.push("/order");
   }
 

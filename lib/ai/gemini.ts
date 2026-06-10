@@ -1,14 +1,12 @@
 // lib/ai/gemini.ts
 import { parseDishList } from "./parseDishList";
+import { MENU_READ_PROMPT } from "./prompts";
 import { ProviderError, type ReadMenu } from "./types";
 
 // gemini-2.5-flash: current free-tier vision model. (2.0-flash has limit:0 on
 // newer accounts; 2.5 is both available on free tier and a stronger reader.)
 const MODEL = "gemini-2.5-flash";
-const PROMPT =
-  "You are reading a restaurant menu image. Extract ONLY the orderable dish names. " +
-  "Ignore prices, section headers, descriptions, and addresses. " +
-  'Respond with a JSON array of strings, e.g. ["Paneer Tikka","Dal Makhani"]. No other text.';
+const PROMPT = MENU_READ_PROMPT;
 
 interface GeminiDeps {
   apiKey: string;

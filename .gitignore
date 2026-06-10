@@ -8,3 +8,6 @@ next-env.d.ts.bak
 .gstack/
 .superpowers/
 .claude/
+
+# graphify generated knowledge-graph artifacts
+graphify-out/

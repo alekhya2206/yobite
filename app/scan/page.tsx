@@ -13,6 +13,24 @@ import s from "./scan.module.css";
 
 type Status = "ready" | "reading" | "error";
 
+// Explain WHY the camera won't start instead of failing silently. The #1 real cause on
+// phones is an insecure origin (http://LAN-IP), where the browser hides mediaDevices
+// entirely — so the camera "does nothing" with no clue why.
+function describeCameraBlock(err?: unknown): string {
+  if (typeof window !== "undefined" && !window.isSecureContext) {
+    return "Camera needs a secure (https) connection. Open YoBite over https to scan — or type the menu below.";
+  }
+  const name =
+    err && typeof err === "object" && "name" in err ? (err as { name?: string }).name : "";
+  if (name === "NotAllowedError" || name === "SecurityError") {
+    return "Camera permission is blocked. Allow it in your browser settings, then reopen — or type the menu.";
+  }
+  if (name === "NotFoundError" || name === "OverconstrainedError") {
+    return "No usable camera found on this device. You can type the menu instead.";
+  }
+  return "Couldn't start the camera. You can type the menu instead.";
+}
+
 export default function ScanPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -38,6 +56,8 @@ export default function ScanPage() {
     let cancelled = false;
     async function start() {
       if (!navigator.mediaDevices?.getUserMedia) {
+        // No camera API (commonly an insecure origin). Explain why, offer the type path.
+        setError(describeCameraBlock());
         setShowType(true);
         return;
       }
@@ -53,7 +73,9 @@ export default function ScanPage() {
         streamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
         setCameraOn(true);
-      } catch {
+      } catch (err) {
+        // Surface the real reason (permission, no device…) instead of a silent fallback.
+        setError(describeCameraBlock(err));
         setShowType(true);
       }
     }
@@ -84,7 +106,8 @@ export default function ScanPage() {
     }
     const video = videoRef.current;
     if (!video || !video.videoWidth) {
-      setShowType(true);
+      // Video frame not ready yet — say so, don't silently bail to the type panel.
+      setError("Camera is still warming up — hold steady and tap again in a second.");
       return;
     }
     setStatus("reading");
@@ -105,8 +128,9 @@ export default function ScanPage() {
       setPageCount((n) => n + 1);
       setStatus("ready");
     } catch (err) {
+      // Surface the failure (don't pretend nothing happened); keep the type path available.
       setStatus("error");
-      setError(err instanceof Error ? err.message : "Couldn't read the menu. Try typing it.");
+      setError(err instanceof Error ? err.message : "Couldn't read the menu just now. Try again, or type it.");
       setShowType(true);
     }
   }

@@ -62,8 +62,8 @@ export default function OrderPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           dishes: session.dishes,
-          goalId: session.goal.id === "custom" ? undefined : session.goal.id,
-          goalText: session.goal.custom,
+          // The diner's raw mood drives the AI ranking (Architecture B).
+          mood: session.mood ?? "",
           ateToday: session.ateToday,
         }),
       });

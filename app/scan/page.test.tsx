@@ -84,6 +84,21 @@ describe("Scan — multi-snap accumulation via type path (OV-1)", () => {
   });
 });
 
+describe("Scan — camera unavailable is explained, not silent (#2)", () => {
+  it("tells the user the camera needs a secure (https) connection", async () => {
+    // The phone bug: on an insecure origin the browser hides mediaDevices entirely, so the
+    // camera 'does nothing'. We must say WHY instead of failing silently.
+    const original = Object.getOwnPropertyDescriptor(window, "isSecureContext");
+    Object.defineProperty(window, "isSecureContext", { value: false, configurable: true });
+    try {
+      render(<ScanPage />);
+      expect(await screen.findByText(/secure.*https|https.*connection/i)).toBeInTheDocument();
+    } finally {
+      if (original) Object.defineProperty(window, "isSecureContext", original);
+    }
+  });
+});
+
 describe("Scan — camera cleanup (OV-4)", () => {
   it("stops all media tracks on unmount", async () => {
     const stop = vi.fn();

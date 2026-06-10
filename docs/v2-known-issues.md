@@ -3,6 +3,24 @@
 Found while dogfooding the Plan 2 build (branch `plan-2-v2-ui`, PR #3). Fix these next session.
 Ordered by priority.
 
+> **Progress 2026-06-09 (session 2):**
+> - **#1 (intent not AI) — FIXED & live-verified.** Real LLM `parseIntent` built (`lib/ai/parseIntent.ts`,
+>   Gemini + deterministic `classifyGoal` fallback), exposed via `app/api/intent`, wired into the intent
+>   screen (async, graceful fallback). Also fixed a latent boundary bug: `/api/rank` re-classified custom
+>   goals and dropped modifiers — now `resolveGoal()` honors a resolved custom goal faithfully; `/order`
+>   sends `goalId` faithfully. Note: the original root-cause guess below was WRONG — the ranker DID honor
+>   low-carb (verified: Chow Mein 51→32); the real gap was the missing LLM + the rank-boundary drop.
+>   Dead `lib/meal/resolveMealGoal` removed. Live Gemini correctly read "no rice, no bread, keep it lean"
+>   → `low carb, light` (regex would lose the low-carb).
+> - **#2 (camera) — code hardened, needs DEVICE verify.** `app/scan/page.tsx` no longer swallows failures
+>   silently: it now explains WHY the camera is blocked (insecure http origin = the phone cause, permission
+>   denied, no device) and surfaces capture/scan errors. Added `npm run dev:https` (`next dev
+>   --experimental-https -H 0.0.0.0`) so the camera works over https on a phone. STILL TO DO: verify real
+>   capture on a device over https; rework to the camera mockup (#6).
+> - **#3 (keyboard) — NOT fixed.** No `autoFocus`/`.focus()` in code, so no blind fix. Needs device repro
+>   over the new https URL.
+> - Suite now 133 pass / 2 skipped, tsc clean, build green.
+
 ## P1 — Per-meal intent isn't AI-backed (wrong picks for the stated mood)
 - **Symptom:** Typed "I want a low-carb meal" → verdict still suggested Grilled Chicken over Chicken Chow Mein; the mood didn't change the result the way it should.
 - **Root cause:** `lib/meal/resolveMealGoal` calls the *deterministic* `classifyGoal` regex (LLM intent was deferred to v1.1). "low carb" isn't a recognized keyword → falls through to a `custom` goal, and `lib/ranker` doesn't actually honor low-carb custom goals (no refined-carb penalty for arbitrary custom text).

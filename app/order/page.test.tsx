@@ -77,6 +77,23 @@ describe("Verdict poster", () => {
     expect(fetchFn.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("sends the diner's raw mood to the ranker (Architecture B)", async () => {
+    saveSession({
+      ...newSession("Chili's", ["Grilled Chicken", "Chicken Chow Mein"]),
+      mood: "high carb, more rice",
+    });
+    const result = rank({ menuText: "Grilled Chicken\nChicken Chow Mein", goal: { id: "balanced" } });
+    const fetchFn = vi.fn(async () => ({ ok: true, json: async () => result }) as unknown as Response);
+    vi.stubGlobal("fetch", fetchFn);
+
+    render(<OrderPage />);
+    await waitFor(() => expect(screen.getByText(/order this/i)).toBeInTheDocument());
+
+    const [, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    const body = JSON.parse(init.body as string);
+    expect(body.mood).toBe("high carb, more rice");
+  });
+
   it("opens the Plan a full meal sheet with courses", async () => {
     seedSession();
     const result = rank({ menuText: "Paneer Tikka\nButter Chicken\nGulab Jamun", goal: { id: "balanced" } });

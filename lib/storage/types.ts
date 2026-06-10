@@ -14,6 +14,8 @@ export interface ActiveSession {
   dishes: string[];
   /** Per-meal goal — seeded from the profile goal, overridden on the intent screen. */
   goal: Goal;
+  /** The diner's raw mood text for THIS meal (free text / shortcut). Drives the AI ranking. */
+  mood?: string;
   ateToday?: string;
   startedAt: number;
   /** Cached verdict so re-opening "Back to your picks" is instant. */
