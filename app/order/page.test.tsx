@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { newSession, saveSession, getSession } from "@/lib/storage";
+import { newSession, saveSession, getSession, clearSession } from "@/lib/storage";
 import { rank } from "@/lib/ranker";
 
 const push = vi.fn();
@@ -92,6 +92,25 @@ describe("Verdict poster", () => {
     const [, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
     const body = JSON.parse(init.body as string);
     expect(body.mood).toBe("high carb, more rice");
+  });
+
+  it("does not resurrect a session that was ended while the rank call was in flight", async () => {
+    seedSession();
+    const result = rank({ menuText: "Grilled Chicken Tikka\nButter Chicken", goal: { id: "high-protein" } });
+    let resolveFetch: () => void = () => {};
+    const fetchFn = vi.fn(
+      () => new Promise<Response>((r) => { resolveFetch = () => r({ ok: true, json: async () => result } as unknown as Response); }),
+    );
+    vi.stubGlobal("fetch", fetchFn);
+
+    render(<OrderPage />);
+    await waitFor(() => expect(fetchFn).toHaveBeenCalled()); // request in flight
+    clearSession(); // user tapped "End" before the response arrived
+    resolveFetch();
+    await waitFor(() => expect(fetchFn).toHaveBeenCalled());
+
+    // the resolved verdict must NOT write the cleared session back to storage
+    expect(getSession()).toBeNull();
   });
 
   it("opens the Plan a full meal sheet with courses", async () => {

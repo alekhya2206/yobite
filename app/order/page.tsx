@@ -70,7 +70,10 @@ export default function OrderPage() {
       if (!res.ok) throw new Error("rank failed");
       const data = (await res.json()) as RankResult;
       setResult(data);
-      saveSession({ ...session, verdict: data });
+      // The rank call can take seconds; if the user tapped "End" (clearSession) meanwhile,
+      // don't resurrect the cleared session by caching the verdict onto a stale snapshot.
+      const current = getSession();
+      if (current?.id === session.id) saveSession({ ...current, verdict: data });
     } catch {
       setError("Couldn't rank the menu just now. Tap to retry.");
     } finally {
