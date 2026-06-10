@@ -63,7 +63,14 @@ export default function Home() {
       <main className={s.main}>
         <header className={s.head}>
           <div>
-            <p className={s.brand}>YoBite</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-mark.png"
+              alt="YoBite"
+              width={44}
+              height={44}
+              style={{ borderRadius: 11, display: "block", marginBottom: 10 }}
+            />
             <h1 className={s.greet}>Hungry?</h1>
             <p className={s.sub}>Point me at the menu — I&rsquo;ll pick.</p>
           </div>
