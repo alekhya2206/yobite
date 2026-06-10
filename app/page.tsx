@@ -65,7 +65,13 @@ export default function Home() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-symbol.png" alt="" width={43} height={40} style={{ display: "block" }} />
+              <img
+                src="/logo-symbol.png"
+                alt=""
+                width={43}
+                height={40}
+                style={{ display: "block", filter: "drop-shadow(0 1px 1.5px rgba(42,18,7,0.28))" }}
+              />
               <span
                 style={{
                   fontFamily: "var(--display)",
