@@ -6,29 +6,28 @@ Source logo art (user-provided) + the open logo task, kept in-repo so any sessio
 - **`app-icon-source.png`** — the full coral-card logo lockup (Y + magnifier + MENU card + check
   + "YoBite" wordmark + "SCAN. TELL MOOD. ORDER THIS." tagline). This is the **app icon** →
   generated into `public/icon-192/512.png`, `icon-maskable-512.png`, `apple-touch-icon.png`,
-  `favicon-*.png/.ico`, and `public/logo.png`.
-- **`symbol-base-transparent.png`** — the transparent **symbol** (Y + magnifier + cream MENU card
-  + gold check), background removed. Handle is **coral** in this base. This is what
-  `public/logo-symbol.png` is derived from (shown in the Home + Scan headers beside the "YoBite"
-  wordmark — "Yo" coral `#E0492F`, "Bite" gold `#F5A623`, Bricolage Grotesque).
-- **`symbol-target-goldhandle.png`** — the **desired look**: same symbol but the magnifier
-  **handle is gold**, not coral. (It has a baked-in gradient background, so it can't be cleanly
-  cut out; the cream MENU card is also low-contrast against its bg.)
-- **`symbol-issue-annotation.png`** — user's annotation showing the current recolor problem.
+  `favicon-*.png/.ico`, and `public/logo.png`. Also rendered as the rounded badge `public/logo-mark.png`
+  shown in the Scan header (cream symbol on coral — a different treatment from the standalone symbol).
+- **`symbol-gold-final.png`** — ✅ **the canonical symbol** (transparent bg, **gold handle**, coral
+  ring, cream MENU card + gold check). User-provided clean export, 678×639. This IS
+  `public/logo-symbol.png` (shown in the Home header beside the "YoBite" wordmark — "Yo" coral
+  `#E0492F`, "Bite" gold `#F5A623`, Bricolage Grotesque). No recolor needed.
+- **`symbol-base-transparent.png`** — the earlier transparent symbol with a **coral** handle.
+  Superseded by `symbol-gold-final.png`; kept for history.
+- **`symbol-target-goldhandle.png`** — the original gold-handle reference (had a baked-in gradient
+  bg, so it couldn't be cleanly cut out). Superseded by the clean `symbol-gold-final.png`.
+- **`symbol-issue-annotation.png`** — user's annotation of the old recolor problem (now resolved).
 
-## OPEN TASK (logo not yet accurate)
-`public/logo-symbol.png` was produced by recoloring the coral handle → gold via PIL hue-shift
-(constrained to a handle capsule AND outside the ring circle). The user says the result is
-**still not accurate** — the gold is not proportionate / bleeds, it should be **ONLY the handle**
-in gold, the ring fully coral.
+## DONE — logo symbol accurate (2026-06-10)
+`public/logo-symbol.png` is now the user's clean transparent gold-handle export
+(`symbol-gold-final.png`) — gold handle, fully coral ring, no recolor/hue-shift, no bleed. The
+earlier PIL hue-shift approach (recoloring the coral handle on `symbol-base-transparent.png`) is
+retired. Verified rendering in the Home header via the `browse` skill (`goto
+http://localhost:3000`, screenshot `--selector header`).
 
-**Better fix options for next session:**
-1. Ask the user for a **clean transparent PNG** of `symbol-target-goldhandle` (gold handle,
-   transparent bg) — then no recolor is needed.
-2. Or redo the recolor in `public/logo-symbol.png` more precisely (tighter handle mask). The
-   handle capsule in the 678×636 base is roughly segment (508,470)→(628,598), and the magnifier
-   ring center is ~(366,328) with outer radius ~201 (handle = pixels outside that circle).
-3. Separately, the cream **MENU card blends** with the peach app canvas — currently softened with
-   a CSS `drop-shadow` on the header `<img>` in `app/page.tsx`; may want a stronger treatment.
+The cream **MENU card** still sits on the peach canvas, so the header `<img>` in `app/page.tsx`
+keeps a CSS `drop-shadow` to lift the symbol off the background.
 
-Verify visually with the `browse` skill: `goto http://localhost:3000`, screenshot `--selector header`.
+**Possible follow-up (not requested):** the Scan-header badge (`public/logo-mark.png`) and the app
+icon are the cream-symbol-on-coral lockup — a separate treatment. If we ever want the gold-handle
+symbol propagated into those, regenerate them from `symbol-gold-final.png`.
