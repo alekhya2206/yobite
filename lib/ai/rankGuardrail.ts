@@ -90,6 +90,8 @@ export function checkRanking(ai: AIRanking, menu: string[], mood: string): Guard
   for (const m of menuSet) {
     if (!ranked.has(m)) return { ok: false, reason: `missing dish: ${m}` };
   }
+  // (2b) No duplicates — every dish exactly once (a repeat would skew dishCount/UI).
+  if (ranked.size !== ai.dishes.length) return { ok: false, reason: "duplicate dish in ranking" };
 
   const best = ai.dishes[0];
   if (!best) return { ok: false, reason: "no best pick" };

@@ -33,6 +33,15 @@ describe("checkRanking — menu fidelity", () => {
     const r = ranking([{ name: "Chicken Biryani", tier: "best" }]);
     expect(checkRanking(r, menu, "high carb").ok).toBe(false);
   });
+  it("rejects a ranking that repeats a dish (Copilot review)", () => {
+    const r = ranking([
+      { name: "Chicken Biryani", tier: "best" },
+      { name: "Grilled Fish", tier: "good" },
+      { name: "Veg Fried Rice", tier: "good" },
+      { name: "Chicken Biryani", tier: "heavier" }, // duplicate
+    ]);
+    expect(checkRanking(r, menu, "high carb").ok).toBe(false);
+  });
 });
 
 describe("checkRanking — intent alignment (the fish-bug guard)", () => {

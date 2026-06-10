@@ -1,9 +1,20 @@
 # YoBite v2 — Known issues to fix (from live testing, 2026-06-06)
 
-Found while dogfooding the Plan 2 build (branch `plan-2-v2-ui`, PR #3). Fix these next session.
+Found while dogfooding the Plan 2 build (branch `plan-2-v2-ui`, PR #3).
 Ordered by priority.
 
-> **Progress 2026-06-09 (session 2):**
+> **CURRENT STATE (2026-06-10) — ranking re-architected, supersedes the notes below.**
+> Per-meal intent is no longer parsed into a goal object. The intent screen stores the diner's
+> **raw mood text** on the session; `/api/rank` ranks via **Architecture B** — the AI (Groq) ranks
+> the menu, a strict deterministic guardrail (`lib/ai/rankGuardrail.ts`) enforces correctness
+> (no invented/missing/duplicate dishes, no intent-violating or ultra-processed best pick, hard
+> veg filter), grounded by a research nutrition reference (`lib/data/foodReference.ts`); the old
+> `lib/ranker` is the offline fallback. **#1 below is fully resolved this way.** The earlier
+> `parseIntent` / `app/api/intent` / `resolveMealGoal` mentioned below have been **removed** — treat
+> any reference to them as historical. Camera (#2) hardening shipped; **#3 keyboard still needs
+> device repro**; voice screen (#5) and camera-mockup match (#6) are still open.
+
+> **Progress 2026-06-09 (session 2) — superseded by the note above:**
 > - **#1 (intent not AI) — FIXED & live-verified.** Real LLM `parseIntent` built (`lib/ai/parseIntent.ts`,
 >   Gemini + deterministic `classifyGoal` fallback), exposed via `app/api/intent`, wired into the intent
 >   screen (async, graceful fallback). Also fixed a latent boundary bug: `/api/rank` re-classified custom

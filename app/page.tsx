@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Deck } from "@/components/Deck";
 import { CheckIcon, CloseIcon, UserIcon } from "@/components/icons";
 import {
-  clearSession, getGoal, getSession, listPlaces, newSession, saveSession,
+  clearSession, getGoal, getSession, listPlaces, newSession, saveSession, upsertPlace,
 } from "@/lib/storage";
 import { goalLabel } from "@/lib/ranker";
 import type { Goal } from "@/lib/ranker/types";
@@ -52,6 +52,8 @@ export default function Home() {
   // Revisit a saved place WITHOUT re-scanning — start a session from its cached
   // menu and go straight to the per-meal intent.
   function revisit(p: Place) {
+    // Refresh lastVisited so "Last you visited" reflects this revisit (listPlaces sorts by it).
+    upsertPlace({ ...p, lastVisited: Date.now() });
     saveSession(newSession(p.name, p.dishes));
     router.push("/intent");
   }
