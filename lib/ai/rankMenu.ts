@@ -4,19 +4,18 @@
 // research rubric). A deterministic guardrail (see rankGuardrail.ts) validates the result.
 import { groqChat, GROQ_TEXT_MODEL } from "./groq";
 import { RANK_PROMPT } from "./prompts";
-import { lookupFood } from "@/lib/data/foodReference";
+import { groundDish } from "@/lib/data/grounding";
 
-/** Build the grounding block: our research-backed facts for any dish we have data on.
- *  Injected into the prompt so the AI ranks from data we own, not just its memory. */
+/** Build the grounding block: our research-backed facts for each dish, composed
+ *  from every component we recognize (compositional grounding — see
+ *  lib/data/grounding.ts) so dishes we don't list verbatim still ground. Injected
+ *  into the prompt so the AI ranks from data we own, not just its memory. */
 function groundingBlock(dishes: string[]): string {
   const lines: string[] = [];
   for (const d of dishes) {
-    const ref = lookupFood(d);
-    if (ref) {
-      lines.push(
-        `- ${d}: carbs=${ref.carbs}, protein=${ref.protein}, fat=${ref.fat}, fibre=${ref.fiber}, ` +
-          `quality=${ref.quality}, glycemic=${ref.glycemic}. ${ref.note}`,
-      );
+    const facts = groundDish(d);
+    if (facts.length) {
+      lines.push(`- ${d}: ${facts.map((f) => f.note).join(" ")}`);
     }
   }
   return lines.length
