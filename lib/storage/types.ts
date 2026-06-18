@@ -5,6 +5,8 @@ import type { Goal, RankResult } from "@/lib/ranker/types";
 export interface Profile {
   goal: Goal;
   dietary: string[];
+  /** True once the first-run welcome + dietary setup has been completed. */
+  onboarded?: boolean;
 }
 
 /** One active dining session. Persists across app close/reopen. */

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Deck } from "@/components/Deck";
 import { CheckIcon, CloseIcon, UserIcon } from "@/components/icons";
 import {
-  clearSession, getGoal, getSession, listPlaces, newSession, saveSession, upsertPlace,
+  clearSession, getGoal, getSession, hasOnboarded, listPlaces, newSession, saveSession, upsertPlace,
 } from "@/lib/storage";
 import { goalLabel } from "@/lib/ranker";
 import type { Goal } from "@/lib/ranker/types";
@@ -35,11 +35,17 @@ export default function Home() {
 
   // Client-only: read persisted state after mount (avoids SSR/storage mismatch).
   useEffect(() => {
+    // First run → send them through the welcome before Home. Stays unmounted
+    // (busy shell) during the redirect, which the splash covers.
+    if (!hasOnboarded()) {
+      router.replace("/onboarding");
+      return;
+    }
     setGoalState(getGoal());
     setSession(getSession());
     setLastPlace(listPlaces()[0] ?? null);
     setMounted(true);
-  }, []);
+  }, [router]);
 
   // OV-2: kill first-paint flash of default "Balanced" goal
   if (!mounted) return <div className="app" aria-busy="true" />;

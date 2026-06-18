@@ -49,10 +49,19 @@ function uid(): string {
 /* ---- profile + goal ---- */
 export function getProfile(): Profile {
   const p = read<Partial<Profile>>(K_PROFILE, DEFAULT_PROFILE);
-  return { goal: p.goal ?? DEFAULT_PROFILE.goal, dietary: p.dietary ?? [] };
+  return { goal: p.goal ?? DEFAULT_PROFILE.goal, dietary: p.dietary ?? [], onboarded: p.onboarded === true };
 }
 export function saveProfile(p: Profile): void {
   write(K_PROFILE, p);
+}
+
+/* ---- first-run onboarding ---- */
+export function hasOnboarded(): boolean {
+  return getProfile().onboarded === true;
+}
+/** Finish first-run setup: persist dietary choices and mark the user onboarded. */
+export function completeOnboarding(dietary: string[]): void {
+  saveProfile({ ...getProfile(), dietary, onboarded: true });
 }
 export function getGoal(): Goal {
   return getProfile().goal;

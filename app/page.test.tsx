@@ -2,22 +2,33 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { saveGoal, saveSession, newSession, upsertPlace, getSession } from "@/lib/storage";
+import { saveGoal, saveSession, newSession, upsertPlace, getSession, completeOnboarding } from "@/lib/storage";
 
 const push = vi.fn();
+const replace = vi.fn();
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
-  useRouter: () => ({ push }),
+  useRouter: () => ({ push, replace }),
 }));
 
 import Home from "./page";
 
 beforeEach(() => {
   localStorage.clear();
+  // Home gates on onboarding; mark onboarded so it renders for these tests.
+  completeOnboarding([]);
   push.mockClear();
+  replace.mockClear();
 });
 
 describe("Home", () => {
+  it("redirects to onboarding on first run (not onboarded)", () => {
+    localStorage.clear(); // wipe the onboarded flag seeded in beforeEach
+    render(<Home />);
+    expect(replace).toHaveBeenCalledWith("/onboarding");
+    expect(screen.queryByText(/hungry/i)).not.toBeInTheDocument();
+  });
+
   it("shows the universal goal label on the goal card", () => {
     saveGoal({ id: "high-protein" });
     render(<Home />);

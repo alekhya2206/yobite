@@ -5,13 +5,14 @@ import {
   getProfile, saveProfile, getGoal, saveGoal,
   getSession, saveSession, clearSession, newSession,
   listPlaces, upsertPlace, getPlace,
+  hasOnboarded, completeOnboarding,
 } from "./index";
 
 beforeEach(() => localStorage.clear());
 
 describe("profile + goal", () => {
   it("returns a balanced default profile when nothing is stored", () => {
-    expect(getProfile()).toEqual({ goal: { id: "balanced" }, dietary: [] });
+    expect(getProfile()).toEqual({ goal: { id: "balanced" }, dietary: [], onboarded: false });
     expect(getGoal()).toEqual({ id: "balanced" });
   });
 
@@ -24,7 +25,26 @@ describe("profile + goal", () => {
   it("persists dietary restrictions without losing the goal", () => {
     saveGoal({ id: "fat-loss" });
     saveProfile({ goal: getGoal(), dietary: ["vegetarian"] });
-    expect(getProfile()).toEqual({ goal: { id: "fat-loss" }, dietary: ["vegetarian"] });
+    expect(getProfile()).toEqual({ goal: { id: "fat-loss" }, dietary: ["vegetarian"], onboarded: false });
+  });
+});
+
+describe("onboarding", () => {
+  it("is not onboarded by default", () => {
+    expect(hasOnboarded()).toBe(false);
+  });
+
+  it("completeOnboarding persists dietary and marks the user onboarded", () => {
+    completeOnboarding(["Veg", "Jain"]);
+    expect(hasOnboarded()).toBe(true);
+    expect(getProfile().dietary).toEqual(["Veg", "Jain"]);
+  });
+
+  it("completing onboarding does not disturb the goal", () => {
+    saveGoal({ id: "high-protein" });
+    completeOnboarding([]);
+    expect(getGoal()).toEqual({ id: "high-protein" });
+    expect(hasOnboarded()).toBe(true);
   });
 });
 
