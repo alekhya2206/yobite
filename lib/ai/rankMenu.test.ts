@@ -54,4 +54,17 @@ describe("makeGroqRankMenu", () => {
     expect(JSON.stringify(body.messages)).toContain("high carb");
     expect(JSON.stringify(body.messages)).toContain("Mashed Potatoes");
   });
+
+  it("grounds an unlisted compositional dish in the prompt (no exact FOOD_REFERENCE row)", async () => {
+    const fetchFn = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: valid } }] }),
+    }) as unknown as Response);
+    const rank = makeGroqRankMenu({ apiKey: "k", fetchFn });
+    await rank(["Schezwan Chilli Garlic Noodles"], "light");
+    const [, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    const msgs = JSON.stringify(JSON.parse(init.body as string).messages).toLowerCase();
+    expect(msgs).toMatch(/research reference/);
+    expect(msgs).toMatch(/refined|maida|noodle/);
+  });
 });
