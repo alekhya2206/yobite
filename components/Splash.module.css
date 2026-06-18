@@ -1,0 +1,93 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  /* Brand coral — the identity color (DESIGN.md). */
+  background: #e0492f;
+  opacity: 1;
+  transition: opacity 420ms ease-in;
+}
+
+/* Faint warm vignette so the flat coral reads as crafted, not a color swatch. */
+.splash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 90% at 50% 38%, rgba(255, 241, 230, 0.08), transparent 60%);
+  pointer-events: none;
+}
+
+.out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lockup {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: rise 340ms ease-out both;
+}
+
+/* Cream squircle medallion holding the full-detail brand mark, lifted off coral. */
+.badge {
+  display: grid;
+  place-items: center;
+  width: 116px;
+  height: 116px;
+  background: #fff1e6;
+  border-radius: 28px;
+  box-shadow: 0 14px 34px rgba(42, 18, 7, 0.2);
+}
+
+.mark {
+  width: 74px;
+  height: 74px;
+  object-fit: contain;
+}
+
+.wordmark {
+  font-family: var(--font-display), "Bricolage Grotesque", sans-serif;
+  font-weight: 800;
+  font-size: 2.7rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #fff1e6;
+}
+
+.bite {
+  color: #f5a623; /* warm gold — matches the brand lockup */
+}
+
+.tagline {
+  font-family: var(--font-body), "DM Sans", sans-serif;
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 241, 230, 0.82);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lockup {
+    animation: none;
+  }
+  .splash {
+    transition: opacity 200ms linear;
+  }
+}
