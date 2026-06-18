@@ -1,6 +1,13 @@
 .splash {
   position: fixed;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  /* Constrain to the same centered phone-width column as the app shell (.app),
+     so on desktop the splash covers only the preview, not the whole window. */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-w);
   z-index: 9999;
   display: grid;
   place-items: center;
