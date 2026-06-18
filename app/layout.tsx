@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "./globals.css";
+import Splash from "@/components/Splash";
 
 // Bricolage Grotesque — characterful display/brand. DM Sans — razor-legible body.
 // Loaded via next/font so they self-host with no layout shift. See DESIGN.md.
@@ -54,7 +55,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${bricolage.variable} ${dmSans.variable}`}>
-      <body>{children}</body>
+      <body>
+        <Splash />
+        {children}
+      </body>
     </html>
   );
 }
