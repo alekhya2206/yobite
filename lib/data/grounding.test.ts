@@ -37,6 +37,17 @@ describe("groundDish — compositional grounding (no RAG)", () => {
     expect(groundDish("Zorblax Surprise")).toEqual([]);
   });
 
+  it("does not ground a standalone number as fried (the '65' token must not over-match)", () => {
+    expect(groundDish("Room 65 Special")).toEqual([]);
+    expect(groundDish("Aisle 65 Combo")).toEqual([]);
+  });
+
+  it("still grounds Chicken 65 as fried via the multiword token", () => {
+    const facts = groundDish("Chicken 65");
+    expect(facts.length).toBeGreaterThan(0);
+    expect(facts.map((f) => f.note.toLowerCase()).join(" ")).toMatch(/fried|oil/);
+  });
+
   it("still resolves exactly-listed dishes (no regression vs lookupFood)", () => {
     const facts = groundDish("Butter Chicken");
     expect(facts.length).toBeGreaterThan(0);

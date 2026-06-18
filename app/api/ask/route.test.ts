@@ -49,4 +49,22 @@ describe("POST /api/ask", () => {
     expect((await post({ question: "hi" })).status).toBe(400);
     expect((await post({ question: "hi", result: { all: "nope" } })).status).toBe(400);
   });
+
+  it("returns 400 (never 500) when a dish lacks the expected shape", async () => {
+    // {all:[{name:"x"}]} passes the array check but the consumers deref d.profile.
+    const res = await post({ question: "hi", result: { all: [{ name: "x" }] } });
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 on a non-JSON body", async () => {
+    const res = await POST(new Request("http://test/api/ask", { method: "POST", body: "not json" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects an oversized question or dish list", async () => {
+    expect((await post({ question: "x".repeat(2000), result: result() })).status).toBe(400);
+    const big = result();
+    big.all = Array.from({ length: 300 }, () => dish("Filler"));
+    expect((await post({ question: "hi", result: big })).status).toBe(400);
+  });
 });

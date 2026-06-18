@@ -51,6 +51,16 @@ describe("makeGroqAskMenu", () => {
     expect(msgs).toContain("Grilled Chicken Tikka");
   });
 
+  it("rejects when the LLM call fails (non-ok HTTP) so the caller can fall back", async () => {
+    const fetchFn = vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      text: async () => "boom",
+    }) as unknown as Response);
+    const ask = makeGroqAskMenu({ apiKey: "k", fetchFn });
+    await expect(ask("anything?", result())).rejects.toThrow();
+  });
+
   it("throws on an empty answer so the caller can fall back to the local answer", async () => {
     const fetchFn = vi.fn(async () => ({
       ok: true,

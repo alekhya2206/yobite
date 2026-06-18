@@ -57,7 +57,9 @@ const COMPONENTS: Component[] = [
     note: "Refined white rice cooked with oil — energy-dense, higher GI than whole grains.",
   },
   {
-    test: (t) => FRIED_METHODS.some((m) => phraseIn(m, t)),
+    // Skip bare-numeric tokens ("65"): they over-match unrelated dishes ("Room 65")
+    // while "Chicken 65" / "Fish 65" still ground via their multiword tokens.
+    test: (t) => FRIED_METHODS.filter((m) => !/^\d+$/.test(m)).some((m) => phraseIn(m, t)),
     match: "fried",
     note: "Deep-fried / battered — an oil-heavy cooking method that adds fat and calories.",
   },
